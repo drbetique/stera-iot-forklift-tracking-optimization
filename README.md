@@ -25,7 +25,7 @@ Real-time IoT solution for forklift tracking and logistics optimization using ES
 \### Hardware
 
 * ESP32 DevKit (ESP32-WROOM-32)
-* Qorvo DWM1001-DEV UWB Boards
+* Qorvo DWM1001-DEV UWB Boards (indoor positioning)
 * MPU6050 Accelerometer/Gyroscope
 * RC522 RFID Reader \& RFID Key card
 * HC-SR04 Ultrasonic Sensors (4×)
@@ -84,6 +84,32 @@ stera-iot-project/
 └── docs/             # Documentation
 
 ```
+
+\## Key Technology: Ultra-Wideband (UWB) Positioning
+
+
+
+This project uses \*\*Qorvo DWM1001-DEV\*\* UWB boards for centimeter-accurate indoor positioning:
+
+\- \*\*Accuracy:\*\* ±10cm (vs GPS ±5m)
+
+\- \*\*Technology:\*\* IEEE 802.15.4a UWB
+
+\- \*\*Range:\*\* Up to 290m line-of-sight
+
+\- \*\*Update Rate:\*\* Up to 10Hz
+
+\- \*\*Advantage:\*\* Works indoors where GPS fails
+
+
+
+\*\*Implementation:\*\*
+
+\- UWB anchors placed at known positions in facility
+
+\- Forklift has UWB tag
+
+\- Real-time trilateration for precise location
 
 
 
