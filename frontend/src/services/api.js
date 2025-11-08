@@ -25,18 +25,7 @@ const api = {
     }
   },
 
-  // Get forklift telemetry (will be implemented when backend is ready)
-  getForkliftTelemetry: async (forkliftId) => {
-    try {
-      const response = await apiClient.get(`/api/forklift/${forkliftId}/telemetry`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch telemetry:', error);
-      throw error;
-    }
-  },
-
-  // Get all forklifts
+  // Forklifts
   getAllForklifts: async () => {
     try {
       const response = await apiClient.get('/api/forklifts');
@@ -47,26 +36,86 @@ const api = {
     }
   },
 
-  // Get trip history
-  getTripHistory: async (forkliftId, startDate, endDate) => {
+  getForklift: async (forkliftId) => {
     try {
-      const response = await apiClient.get(`/api/forklift/${forkliftId}/trips`, {
-        params: { startDate, endDate },
-      });
+      const response = await apiClient.get(`/api/forklifts/${forkliftId}`);
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch trip history:', error);
+      console.error('Failed to fetch forklift:', error);
       throw error;
     }
   },
 
-  // Get analytics
-  getAnalytics: async (forkliftId) => {
+  createForklift: async (forkliftData) => {
     try {
-      const response = await apiClient.get(`/api/forklift/${forkliftId}/analytics`);
+      const response = await apiClient.post('/api/forklifts', forkliftData);
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch analytics:', error);
+      console.error('Failed to create forklift:', error);
+      throw error;
+    }
+  },
+
+  // Telemetry
+  getLatestTelemetry: async (forkliftId) => {
+    try {
+      const response = await apiClient.get(`/api/telemetry/${forkliftId}/latest`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch latest telemetry:', error);
+      throw error;
+    }
+  },
+
+  getTelemetryHistory: async (forkliftId, params = {}) => {
+    try {
+      const response = await apiClient.get(`/api/telemetry/${forkliftId}/history`, {
+        params
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch telemetry history:', error);
+      throw error;
+    }
+  },
+
+  postTelemetry: async (telemetryData) => {
+    try {
+      const response = await apiClient.post('/api/telemetry', telemetryData);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to post telemetry:', error);
+      throw error;
+    }
+  },
+
+  // Stations
+  getAllStations: async (params = {}) => {
+    try {
+      const response = await apiClient.get('/api/stations', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch stations:', error);
+      throw error;
+    }
+  },
+
+  getStation: async (stationId) => {
+    try {
+      const response = await apiClient.get(`/api/stations/${stationId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch station:', error);
+      throw error;
+    }
+  },
+
+  createStation: async (stationData) => {
+    try {
+      const response = await apiClient.post('/api/stations', stationData);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create station:', error);
       throw error;
     }
   },
