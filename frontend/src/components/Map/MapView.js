@@ -73,12 +73,12 @@ function MapView() {
 
   const fetchForklifts = async () => {
     try {
-      const response = await api.getAllForklifts();
-      if (response.success && response.data.length > 0) {
-        setForklifts(response.data);
-        
+      const data = await api.getForklifts();
+      if (Array.isArray(data) && data.length > 0) {
+        setForklifts(data);
+
         // Center map on first forklift with location
-        const forkliftWithLocation = response.data.find(f => f.currentLocation);
+        const forkliftWithLocation = data.find(f => f.currentLocation);
         if (forkliftWithLocation) {
           setMapCenter([
             forkliftWithLocation.currentLocation.latitude,

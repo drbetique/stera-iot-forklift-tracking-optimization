@@ -1,11 +1,94 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import api from '../../services/api';
 import './ForkliftList.css';
+import {
+  formatTime,
+  formatCoordinate,
+  formatPercentage,
+  formatNumber,
+  capitalize,
+  getBatteryIcon,
+  getActivityIcon,
+  getActivityColor,
+  getBatteryColor
+} from '../../utils/formatters';
+
+// Skeleton Card for Loading State
+const SkeletonForkliftCard = () => (
+  <div className="forklift-card skeleton-card">
+    <div className="skeleton-header">
+      <div className="skeleton-title"></div>
+      <div className="skeleton-badge"></div>
+    </div>
+    <div className="skeleton-body">
+      <div className="skeleton-line"></div>
+      <div className="skeleton-line"></div>
+      <div className="skeleton-line"></div>
+    </div>
+  </div>
+);
 
 function ForkliftList() {
   const [forklifts, setForklifts] = useState([]);
+  const [filteredForklifts, setFilteredForklifts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterActivity, setFilterActivity] = useState('ALL');
+  const [sortBy, setSortBy] = useState('name');
+  const [selectedForklift, setSelectedForklift] = useState(null);
+
+  const fetchForklifts = async (isManualRefresh = false) => {
+    // setLoading(true) is not called here to allow for silent background refresh
+    try {
+      if (isManualRefresh) {
+        setRefreshing(true);
+      }
+
+      const data = await api.getForklifts();
+      setForklifts(data);
+      setError(null);
+
+      if (isManualRefresh) {
+        setTimeout(() => setRefreshing(false), 500);
+      }
+    } catch (err) {
+      setError('Failed to fetch forklifts');
+      console.error(err);
+      setRefreshing(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewDetails = (forklift) => {
+    setSelectedForklift(forklift);
+  };
+
+  const closeDetailsModal = () => {
+    setSelectedForklift(null);
+  };
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && selectedForklift) {
+        closeDetailsModal();
+      }
+    };
+
+    if (selectedForklift) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedForklift]);
 
   useEffect(() => {
     fetchForklifts();
@@ -14,57 +97,57 @@ function ForkliftList() {
     return () => clearInterval(interval);
   }, []);
 
-  const fetchForklifts = async () => {
-    try {
-      const response = await api.getAllForklifts();
-      if (response.success) {
-        setForklifts(response.data);
-        setError(null);
+  useEffect(() => {
+    const filterAndSortForklifts = () => {
+      let filtered = [...forklifts];
+
+      // Apply search filter
+      if (searchTerm) {
+        filtered = filtered.filter(f =>
+          (f.name && f.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (f.forkliftId && f.forkliftId.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (f.model && f.model.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
       }
-    } catch (err) {
-      setError('Failed to fetch forklifts');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const getActivityColor = (activity) => {
-    const colors = {
-      'DRIVING': '#3b82f6',
-      'WORKING': '#10b981',
-      'IDLE': '#f59e0b',
-      'PARKED': '#6b7280',
-      'CHARGING': '#8b5cf6',
-      'UNKNOWN': '#9ca3af'
+      // Apply activity filter
+      if (filterActivity !== 'ALL') {
+        filtered = filtered.filter(f => f.currentActivity === filterActivity);
+      }
+
+      // Apply sorting
+      filtered.sort((a, b) => {
+        switch (sortBy) {
+          case 'name':
+            return (a.name || '').localeCompare(b.name || '');
+          case 'battery':
+            return (b.batteryLevel || 0) - (a.batteryLevel || 0);
+          case 'activity':
+            return (a.currentActivity || '').localeCompare(b.currentActivity || '');
+          default:
+            return 0;
+        }
+      });
+
+      setFilteredForklifts(filtered);
     };
-    return colors[activity] || colors.UNKNOWN;
-  };
 
-  const getActivityIcon = (activity) => {
-    const icons = {
-      'DRIVING': '🚗',
-      'WORKING': '⚙️',
-      'IDLE': '⏸️',
-      'PARKED': '🅿️',
-      'CHARGING': '🔋',
-      'UNKNOWN': '❓'
-    };
-    return icons[activity] || icons.UNKNOWN;
-  };
+    filterAndSortForklifts();
+  }, [forklifts, searchTerm, filterActivity, sortBy]);
 
-  const getBatteryColor = (level) => {
-    if (level >= 70) return '#10b981';
-    if (level >= 40) return '#f59e0b';
-    return '#ef4444';
-  };
 
   if (loading) {
     return (
       <div className="forklift-list">
-        <div className="loading">
-          <div className="spinner"></div>
-          <p>Loading forklifts...</p>
+        <div className="list-header">
+          <div className="header-title">
+            <h1>Fleet Overview</h1>
+          </div>
+        </div>
+        <div className="forklift-grid">
+          <SkeletonForkliftCard />
+          <SkeletonForkliftCard />
+          <SkeletonForkliftCard />
         </div>
       </div>
     );
@@ -73,102 +156,310 @@ function ForkliftList() {
   if (error) {
     return (
       <div className="forklift-list">
-        <div className="error">
-          <p>❌ {error}</p>
-          <button onClick={fetchForklifts}>Retry</button>
+        <div className="error-container">
+          <div className="error-icon">❌</div>
+          <h3>Oops! Something went wrong</h3>
+          <p>{error}</p>
+          <button
+            className="retry-btn"
+            onClick={() => { setLoading(true); fetchForklifts(true); }}
+            disabled={refreshing}
+          >
+            {refreshing ? '🔄 Retrying...' : '🔄 Try Again'}
+          </button>
         </div>
       </div>
     );
   }
 
+  // Details Modal
+  const detailsModal = selectedForklift && (
+    <div className="details-modal-overlay" onClick={closeDetailsModal}>
+      <div className="details-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="details-modal-header">
+          <div className="details-header-info">
+            <span className="forklift-icon-large">🚜</span>
+            <div>
+              <h2>{selectedForklift.name || 'Unnamed Forklift'}</h2>
+              <p className="details-id">{selectedForklift.forkliftId || 'No ID'}</p>
+            </div>
+          </div>
+          <button
+            className="close-details-btn"
+            onClick={closeDetailsModal}
+            aria-label="Close details"
+          >
+            &times;
+          </button>
+        </div>
+
+        <div className="details-modal-body">
+          <div className="details-section">
+            <h3>Status Information</h3>
+            <div className="details-grid">
+              <div className="detail-item">
+                <span className="detail-label">Activity</span>
+                <span
+                  className="detail-value activity-badge"
+                  style={{ backgroundColor: getActivityColor(selectedForklift.currentActivity) }}
+                >
+                  {getActivityIcon(selectedForklift.currentActivity)} {selectedForklift.currentActivity || 'UNKNOWN'}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Status</span>
+                <span className={`status-badge ${selectedForklift.status ? selectedForklift.status.toLowerCase() : 'unknown'}`}>
+                  <span className="status-dot"></span>
+                  {capitalize(selectedForklift.status)}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Model</span>
+                <span className="detail-value">{selectedForklift.model || 'N/A'}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Last Updated</span>
+                <span className="detail-value">{formatTime(selectedForklift.lastSeen, true)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="details-section">
+            <h3>Battery Status</h3>
+            <div className="battery-details">
+              <div className="battery-bar-large">
+                <div
+                  className="battery-fill-large"
+                  style={{
+                    width: `${selectedForklift.batteryLevel || 0}%`,
+                    backgroundColor: getBatteryColor(selectedForklift.batteryLevel || 0)
+                  }}
+                >
+                  <span className="battery-percentage-large">{formatPercentage(selectedForklift.batteryLevel || 0)}</span>
+                </div>
+              </div>
+              <p className="battery-status">
+                {getBatteryIcon(selectedForklift.batteryLevel || 0)}
+                {selectedForklift.batteryLevel >= 80 ? ' Fully Charged' :
+                 selectedForklift.batteryLevel >= 40 ? ' Good' :
+                 selectedForklift.batteryLevel >= 20 ? ' Low - Charge Soon' :
+                 ' Critical - Charge Immediately'}
+              </p>
+            </div>
+          </div>
+
+          {selectedForklift.currentLocation && (
+            <div className="details-section">
+              <h3>Location</h3>
+              <div className="location-details">
+                <p>
+                  <strong>Latitude:</strong> {formatCoordinate(selectedForklift.currentLocation.latitude)}
+                </p>
+                <p>
+                  <strong>Longitude:</strong> {formatCoordinate(selectedForklift.currentLocation.longitude)}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="details-modal-footer">
+          <button className="close-details-footer-btn" onClick={closeDetailsModal}>
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
+    <>
     <div className="forklift-list">
+      {/* Enhanced List Header */}
       <div className="list-header">
-        <h2>Active Forklifts ({forklifts.length})</h2>
-        <button className="refresh-btn" onClick={fetchForklifts}>
-          🔄 Refresh
+        <div className="header-title">
+          <h2>Fleet Overview</h2>
+          <span className="fleet-count">{formatNumber(filteredForklifts.length)} / {formatNumber(forklifts.length)} units</span>
+        </div>
+        <button
+          className="refresh-btn"
+          onClick={() => fetchForklifts(true)}
+          disabled={refreshing}
+          aria-label="Refresh forklift list"
+        >
+          <span className={`btn-icon ${refreshing ? 'spinning' : ''}`}>🔄</span>
+          <span className="btn-text">{refreshing ? 'Refreshing...' : 'Refresh'}</span>
         </button>
       </div>
 
-      {forklifts.length === 0 ? (
+      {/* Search and Filter Controls */}
+      <div className="controls-panel">
+        <div className="search-box">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search by name, ID, or model..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          {searchTerm && (
+            <button
+              className="clear-btn"
+              onClick={() => setSearchTerm('')}
+              aria-label="Clear search"
+              title="Clear search"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        <div className="filter-group">
+          <select
+            value={filterActivity}
+            onChange={(e) => setFilterActivity(e.target.value)}
+            className="filter-select"
+          >
+            <option value="ALL">All Activities</option>
+            <option value="DRIVING">🚗 Driving</option>
+            <option value="WORKING">⚙️ Working</option>
+            <option value="IDLE">⏸️ Idle</option>
+            <option value="PARKED">🅿️ Parked</option>
+            <option value="CHARGING">🔋 Charging</option>
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="filter-select"
+          >
+            <option value="name">Sort: Name</option>
+            <option value="battery">Sort: Battery</option>
+            <option value="activity">Sort: Activity</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Forklift Grid */}
+      {filteredForklifts.length === 0 ? (
         <div className="empty-state">
-          <p>No forklifts found</p>
-          <p className="empty-hint">Add forklifts to start tracking</p>
+          <div className="empty-icon">📦</div>
+          <h3>No forklifts found</h3>
+          <p className="empty-hint">
+            {searchTerm || filterActivity !== 'ALL'
+              ? 'Try adjusting your search or filter'
+              : 'Waiting for forklift data...'}
+          </p>
+          {(searchTerm || filterActivity !== 'ALL') && (
+            <button
+              className="clear-filters-btn"
+              onClick={() => {
+                setSearchTerm('');
+                setFilterActivity('ALL');
+              }}
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
       ) : (
         <div className="forklift-grid">
-          {forklifts.map((forklift) => (
-            <div key={forklift._id} className="forklift-card">
+          {filteredForklifts.map((forklift, index) => (
+            <div
+              key={forklift._id || index}
+              className="forklift-card"
+              style={{ animationDelay: `${index * 0.05}s` }}
+            >
               <div className="card-header">
                 <div className="forklift-id">
-                  <span className="icon">🚜</span>
+                  <span className="forklift-icon">🚜</span>
                   <div>
-                    <h3>{forklift.name}</h3>
-                    <p className="id-text">{forklift.forkliftId}</p>
+                    <h3 className="forklift-name">{forklift.name || 'Unnamed'}</h3>
+                    <p className="id-text">{forklift.forkliftId || 'No ID'}</p>
                   </div>
                 </div>
-                <div 
+                <div
                   className="activity-badge"
                   style={{ backgroundColor: getActivityColor(forklift.currentActivity) }}
                 >
-                  {getActivityIcon(forklift.currentActivity)} {forklift.currentActivity}
+                  {getActivityIcon(forklift.currentActivity)} {forklift.currentActivity || 'UNKNOWN'}
                 </div>
               </div>
 
               <div className="card-body">
                 <div className="info-row">
-                  <span className="label">Model:</span>
+                  <span className="label">Model</span>
                   <span className="value">{forklift.model || 'N/A'}</span>
                 </div>
 
                 <div className="info-row">
-                  <span className="label">Status:</span>
-                  <span className={`status-badge ${forklift.status}`}>
-                    {forklift.status}
+                  <span className="label">Status</span>
+                  <span className={`status-badge ${forklift.status ? forklift.status.toLowerCase() : 'unknown'}`}>
+                    <span className="status-dot"></span>
+                    {capitalize(forklift.status)}
                   </span>
                 </div>
 
                 <div className="info-row">
-                  <span className="label">Battery:</span>
-                  <div className="battery-indicator">
-                    <div 
-                      className="battery-fill"
-                      style={{ 
-                        width: `${forklift.batteryLevel || 0}%`,
-                        backgroundColor: getBatteryColor(forklift.batteryLevel || 0)
-                      }}
-                    ></div>
-                    <span className="battery-text">{forklift.batteryLevel || 0}%</span>
+                  <span className="label">Battery</span>
+                  <div className="battery-container">
+                    <div className="battery-bar">
+                      <div
+                        className="battery-fill"
+                        style={{
+                          width: `${forklift.batteryLevel || 0}%`,
+                          backgroundColor: getBatteryColor(forklift.batteryLevel || 0)
+                        }}
+                      >
+                        <span className="battery-percentage">{formatPercentage(forklift.batteryLevel || 0)}</span>
+                      </div>
+                    </div>
+                    <span className="battery-icon">{getBatteryIcon(forklift.batteryLevel || 0)}</span>
                   </div>
                 </div>
 
                 {forklift.currentLocation && (
                   <div className="info-row">
-                    <span className="label">Location:</span>
+                    <span className="label">Location</span>
                     <span className="value location">
-                      📍 {forklift.currentLocation.latitude.toFixed(4)}, 
-                      {forklift.currentLocation.longitude.toFixed(4)}
+                      📍 {formatCoordinate(forklift.currentLocation.latitude)}, {formatCoordinate(forklift.currentLocation.longitude)}
                     </span>
                   </div>
                 )}
 
                 <div className="info-row">
-                  <span className="label">Last Seen:</span>
-                  <span className="value">
-                    {new Date(forklift.lastSeen).toLocaleTimeString()}
+                  <span className="label">Last Update</span>
+                  <span className="value time">
+                    {formatTime(forklift.lastSeen, true)}
                   </span>
                 </div>
               </div>
 
               <div className="card-footer">
-                <button className="detail-btn">View Details →</button>
+                <button
+                  className="detail-btn"
+                  onClick={() => handleViewDetails(forklift)}
+                  aria-label={`View details for ${forklift.name || 'forklift'}`}
+                >
+                  <span>View Details</span>
+                  <span className="arrow">→</span>
+                </button>
               </div>
             </div>
           ))}
         </div>
       )}
     </div>
+
+    {/* Render details modal using Portal */}
+    {detailsModal && ReactDOM.createPortal(
+      detailsModal,
+      document.body
+    )}
+    </>
   );
 }
+
 
 export default ForkliftList;

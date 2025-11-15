@@ -1,124 +1,114 @@
-import axios from 'axios';
+// src/services/api.js
+const API_BASE_URL = 'http://localhost:3001/api';
 
-// Base URL for backend API
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-
-// Create axios instance with default config
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// API endpoints
 const api = {
-  // Health check
-  healthCheck: async () => {
+  async getForklifts() {
     try {
-      const response = await apiClient.get('/health');
-      return response.data;
-    } catch (error) {
-      console.error('Health check failed:', error);
-      throw error;
-    }
-  },
-
-  // Forklifts
-  getAllForklifts: async () => {
-    try {
-      const response = await apiClient.get('/api/forklifts');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch forklifts:', error);
-      throw error;
-    }
-  },
-
-  getForklift: async (forkliftId) => {
-    try {
-      const response = await apiClient.get(`/api/forklifts/${forkliftId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch forklift:', error);
-      throw error;
-    }
-  },
-
-  createForklift: async (forkliftData) => {
-    try {
-      const response = await apiClient.post('/api/forklifts', forkliftData);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to create forklift:', error);
-      throw error;
-    }
-  },
-
-  // Telemetry
-  getLatestTelemetry: async (forkliftId) => {
-    try {
-      const response = await apiClient.get(`/api/telemetry/${forkliftId}/latest`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch latest telemetry:', error);
-      throw error;
-    }
-  },
-
-  getTelemetryHistory: async (forkliftId, params = {}) => {
-    try {
-      const response = await apiClient.get(`/api/telemetry/${forkliftId}/history`, {
-        params
+      const timestamp = new Date().getTime();
+      const url = `${API_BASE_URL}/forklifts?_t=${timestamp}`;
+      
+      console.log('API: Fetching forklifts from', url);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
+        cache: 'no-store'
       });
-      return response.data;
+
+      console.log('API: Response status:', response.status);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (!result.success) {
+        console.warn('API: Forklift fetch was not successful.', result.message);
+        return [];
+      }
+      
+      console.log(`API: ${result.count} forklifts fetched.`);
+      return result.data || []; // Return the data array or an empty array
     } catch (error) {
-      console.error('Failed to fetch telemetry history:', error);
-      throw error;
+      console.error('API: Error fetching forklifts:', error);
+      throw error; // Re-throw the error to be caught by the component
     }
   },
 
-  postTelemetry: async (telemetryData) => {
+  async getForkliftById(id) {
     try {
-      const response = await apiClient.post('/api/telemetry', telemetryData);
-      return response.data;
+      const timestamp = new Date().getTime();
+      const response = await fetch(`${API_BASE_URL}/forklifts/${id}?_t=${timestamp}`, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        },
+        cache: 'no-store'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
-      console.error('Failed to post telemetry:', error);
-      throw error;
+      console.error('API: Error fetching forklift:', error);
+      return null;
     }
   },
 
-  // Stations
-  getAllStations: async (params = {}) => {
+  async getTelemetry() {
     try {
-      const response = await apiClient.get('/api/stations', { params });
-      return response.data;
+      const timestamp = new Date().getTime();
+      const response = await fetch(`${API_BASE_URL}/telemetry?_t=${timestamp}`, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        },
+        cache: 'no-store'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
-      console.error('Failed to fetch stations:', error);
-      throw error;
+      console.error('API: Error fetching telemetry:', error);
+      return [];
     }
   },
 
-  getStation: async (stationId) => {
+  async getStations() {
     try {
-      const response = await apiClient.get(`/api/stations/${stationId}`);
-      return response.data;
+      const timestamp = new Date().getTime();
+      const response = await fetch(`${API_BASE_URL}/stations?_t=${timestamp}`, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        },
+        cache: 'no-store'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
-      console.error('Failed to fetch station:', error);
-      throw error;
+      console.error('API: Error fetching stations:', error);
+      return [];
     }
-  },
-
-  createStation: async (stationData) => {
-    try {
-      const response = await apiClient.post('/api/stations', stationData);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to create station:', error);
-      throw error;
-    }
-  },
+  }
 };
 
 export default api;

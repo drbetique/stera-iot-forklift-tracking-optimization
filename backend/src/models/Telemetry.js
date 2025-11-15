@@ -4,12 +4,10 @@ const telemetrySchema = new mongoose.Schema({
   forkliftId: {
     type: String,
     required: true,
-    index: true
   },
   timestamp: {
     type: Date,
     default: Date.now,
-    index: true
   },
   gps: {
     latitude: {

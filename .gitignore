@@ -33,3 +33,14 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Gemini-related files
+GEMINI.md
+CLAUDE.md
+FRONTEND_POLISH_SUMMARY.md
+FRONTEND_QUICK_REFERENCE.md
+
+# Backup directories
+frontend/src/components/Dashboard_BACKUP/
+frontend/src/components/Dashboard_UPDATE2/
+frontend/src/components/ForkliftList_BACKUP/

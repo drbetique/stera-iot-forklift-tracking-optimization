@@ -5,7 +5,7 @@ const Forklift = require('../models/Forklift');
 const Station = require('../models/Station');
 const Telemetry = require('../models/Telemetry');
 
-// Sample forklifts
+// Sample forklifts - 20 diverse units across Helsinki/Espoo area
 const forklifts = [
   {
     forkliftId: 'FL-001',
@@ -23,8 +23,8 @@ const forklifts = [
   {
     forkliftId: 'FL-002',
     name: 'Forklift Beta',
-    model: 'Linde E20',
-    serialNumber: 'LI-2023-002',
+    model: 'Hyster E60XN',
+    serialNumber: 'HY-2023-002',
     status: 'active',
     currentActivity: 'IDLE',
     batteryLevel: 62,
@@ -36,14 +36,235 @@ const forklifts = [
   {
     forkliftId: 'FL-003',
     name: 'Forklift Gamma',
-    model: 'Toyota 8FBE20U',
-    serialNumber: 'TY-2023-003',
+    model: 'Crown RC 5500',
+    serialNumber: 'CR-2023-003',
     status: 'active',
     currentActivity: 'WORKING',
     batteryLevel: 91,
     currentLocation: {
       latitude: 60.1692,
       longitude: 24.9361
+    }
+  },
+  {
+    forkliftId: 'FL-004',
+    name: 'Forklift Delta',
+    model: 'Yale ERP030VT',
+    serialNumber: 'YL-2023-004',
+    status: 'active',
+    currentActivity: 'CHARGING',
+    batteryLevel: 45,
+    currentLocation: {
+      latitude: 60.1700,
+      longitude: 24.9345
+    }
+  },
+  {
+    forkliftId: 'FL-005',
+    name: 'Forklift Epsilon',
+    model: 'Raymond 7400',
+    serialNumber: 'RM-2023-005',
+    status: 'active',
+    currentActivity: 'PARKED',
+    batteryLevel: 78,
+    currentLocation: {
+      latitude: 60.1688,
+      longitude: 24.9370
+    }
+  },
+  {
+    forkliftId: 'FL-006',
+    name: 'Forklift Zeta',
+    model: 'Toyota 8FBMT25',
+    serialNumber: 'TY-2023-006',
+    status: 'active',
+    currentActivity: 'WORKING',
+    batteryLevel: 68,
+    currentLocation: {
+      latitude: 60.1705,
+      longitude: 24.9340
+    }
+  },
+  {
+    forkliftId: 'FL-007',
+    name: 'Forklift Eta',
+    model: 'Hyster J40XN',
+    serialNumber: 'HY-2023-007',
+    status: 'active',
+    currentActivity: 'DRIVING',
+    batteryLevel: 55,
+    currentLocation: {
+      latitude: 60.1680,
+      longitude: 24.9365
+    }
+  },
+  {
+    forkliftId: 'FL-008',
+    name: 'Forklift Theta',
+    model: 'Crown ESR5000',
+    serialNumber: 'CR-2023-008',
+    status: 'maintenance',
+    currentActivity: 'PARKED',
+    batteryLevel: 15,
+    currentLocation: {
+      latitude: 60.1710,
+      longitude: 24.9350
+    }
+  },
+  {
+    forkliftId: 'FL-009',
+    name: 'Forklift Iota',
+    model: 'Yale MPB040VG',
+    serialNumber: 'YL-2023-009',
+    status: 'active',
+    currentActivity: 'IDLE',
+    batteryLevel: 82,
+    currentLocation: {
+      latitude: 60.1675,
+      longitude: 24.9380
+    }
+  },
+  {
+    forkliftId: 'FL-010',
+    name: 'Forklift Kappa',
+    model: 'Raymond 8410',
+    serialNumber: 'RM-2023-010',
+    status: 'active',
+    currentActivity: 'WORKING',
+    batteryLevel: 94,
+    currentLocation: {
+      latitude: 60.1715,
+      longitude: 24.9335
+    }
+  },
+  {
+    forkliftId: 'FL-011',
+    name: 'Forklift Lambda',
+    model: 'Toyota 7FBEU20',
+    serialNumber: 'TY-2023-011',
+    status: 'active',
+    currentActivity: 'DRIVING',
+    batteryLevel: 73,
+    currentLocation: {
+      latitude: 60.1665,
+      longitude: 24.9390
+    }
+  },
+  {
+    forkliftId: 'FL-012',
+    name: 'Forklift Mu',
+    model: 'Hyster E80XN',
+    serialNumber: 'HY-2023-012',
+    status: 'active',
+    currentActivity: 'CHARGING',
+    batteryLevel: 28,
+    currentLocation: {
+      latitude: 60.1720,
+      longitude: 24.9355
+    }
+  },
+  {
+    forkliftId: 'FL-013',
+    name: 'Forklift Nu',
+    model: 'Crown FC 5200',
+    serialNumber: 'CR-2023-013',
+    status: 'active',
+    currentActivity: 'WORKING',
+    batteryLevel: 87,
+    currentLocation: {
+      latitude: 60.1660,
+      longitude: 24.9375
+    }
+  },
+  {
+    forkliftId: 'FL-014',
+    name: 'Forklift Xi',
+    model: 'Yale ERC050VG',
+    serialNumber: 'YL-2023-014',
+    status: 'active',
+    currentActivity: 'IDLE',
+    batteryLevel: 41,
+    currentLocation: {
+      latitude: 60.1725,
+      longitude: 24.9330
+    }
+  },
+  {
+    forkliftId: 'FL-015',
+    name: 'Forklift Omicron',
+    model: 'Raymond 7310',
+    serialNumber: 'RM-2023-015',
+    status: 'active',
+    currentActivity: 'PARKED',
+    batteryLevel: 100,
+    currentLocation: {
+      latitude: 60.1655,
+      longitude: 24.9395
+    }
+  },
+  {
+    forkliftId: 'FL-016',
+    name: 'Forklift Pi',
+    model: 'Toyota 8FBN25',
+    serialNumber: 'TY-2023-016',
+    status: 'active',
+    currentActivity: 'DRIVING',
+    batteryLevel: 66,
+    currentLocation: {
+      latitude: 60.1730,
+      longitude: 24.9325
+    }
+  },
+  {
+    forkliftId: 'FL-017',
+    name: 'Forklift Rho',
+    model: 'Hyster H80FT',
+    serialNumber: 'HY-2023-017',
+    status: 'active',
+    currentActivity: 'WORKING',
+    batteryLevel: 79,
+    currentLocation: {
+      latitude: 60.1650,
+      longitude: 24.9400
+    }
+  },
+  {
+    forkliftId: 'FL-018',
+    name: 'Forklift Sigma',
+    model: 'Crown SP 3500',
+    serialNumber: 'CR-2023-018',
+    status: 'active',
+    currentActivity: 'IDLE',
+    batteryLevel: 52,
+    currentLocation: {
+      latitude: 60.1735,
+      longitude: 24.9360
+    }
+  },
+  {
+    forkliftId: 'FL-019',
+    name: 'Forklift Tau',
+    model: 'Yale GDP060VX',
+    serialNumber: 'YL-2023-019',
+    status: 'maintenance',
+    currentActivity: 'PARKED',
+    batteryLevel: 18,
+    currentLocation: {
+      latitude: 60.1645,
+      longitude: 24.9385
+    }
+  },
+  {
+    forkliftId: 'FL-020',
+    name: 'Forklift Upsilon',
+    model: 'Raymond 9600',
+    serialNumber: 'RM-2023-020',
+    status: 'active',
+    currentActivity: 'CHARGING',
+    batteryLevel: 35,
+    currentLocation: {
+      latitude: 60.1740,
+      longitude: 24.9345
     }
   }
 ];
@@ -119,10 +340,28 @@ const stations = [
 
 // Generate sample telemetry data
 const generateTelemetry = (forkliftId, activity) => {
+  // Base locations for all 20 forklifts (matching their currentLocation)
   const baseLocation = {
     'FL-001': { lat: 60.1695, lon: 24.9354 },
     'FL-002': { lat: 60.1698, lon: 24.9358 },
-    'FL-003': { lat: 60.1692, lon: 24.9361 }
+    'FL-003': { lat: 60.1692, lon: 24.9361 },
+    'FL-004': { lat: 60.1700, lon: 24.9345 },
+    'FL-005': { lat: 60.1688, lon: 24.9370 },
+    'FL-006': { lat: 60.1705, lon: 24.9340 },
+    'FL-007': { lat: 60.1680, lon: 24.9365 },
+    'FL-008': { lat: 60.1710, lon: 24.9350 },
+    'FL-009': { lat: 60.1675, lon: 24.9380 },
+    'FL-010': { lat: 60.1715, lon: 24.9335 },
+    'FL-011': { lat: 60.1665, lon: 24.9390 },
+    'FL-012': { lat: 60.1720, lon: 24.9355 },
+    'FL-013': { lat: 60.1660, lon: 24.9375 },
+    'FL-014': { lat: 60.1725, lon: 24.9330 },
+    'FL-015': { lat: 60.1655, lon: 24.9395 },
+    'FL-016': { lat: 60.1730, lon: 24.9325 },
+    'FL-017': { lat: 60.1650, lon: 24.9400 },
+    'FL-018': { lat: 60.1735, lon: 24.9360 },
+    'FL-019': { lat: 60.1645, lon: 24.9385 },
+    'FL-020': { lat: 60.1740, lon: 24.9345 }
   };
 
   const activityData = {
@@ -185,11 +424,21 @@ const seedDatabase = async () => {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✅ Connected to MongoDB');
 
-    // Clear existing data
-    console.log('🗑️  Clearing existing data...');
-    await Forklift.deleteMany({});
-    await Station.deleteMany({});
-    await Telemetry.deleteMany({});
+    // Clear existing data by dropping collections
+    console.log('🗑️  Dropping collections...');
+    await Forklift.collection.drop().catch(err => {
+      if (err.code !== 26) throw err; // Ignore "namespace not found" error
+      console.log('Forklifts collection did not exist, skipping drop.');
+    });
+    await Station.collection.drop().catch(err => {
+      if (err.code !== 26) throw err; // Ignore "namespace not found" error
+      console.log('Stations collection did not exist, skipping drop.');
+    });
+    await Telemetry.collection.drop().catch(err => {
+      if (err.code !== 26) throw err; // Ignore "namespace not found" error
+      console.log('Telemetry collection did not exist, skipping drop.');
+    });
+    console.log('✅ Collections dropped.');
 
     // Insert forklifts
     console.log('🚜 Creating forklifts...');
@@ -201,13 +450,18 @@ const seedDatabase = async () => {
     await Station.insertMany(stations);
     console.log(`✅ Created ${stations.length} stations`);
 
-    // Insert telemetry data
+    // Insert telemetry data - create 10 telemetry records per forklift
     console.log('📊 Creating telemetry data...');
-    const telemetryData = [
-      ...Array(10).fill(null).map(() => generateTelemetry('FL-001', 'DRIVING')),
-      ...Array(10).fill(null).map(() => generateTelemetry('FL-002', 'IDLE')),
-      ...Array(10).fill(null).map(() => generateTelemetry('FL-003', 'WORKING'))
-    ];
+    const telemetryData = [];
+
+    forklifts.forEach(forklift => {
+      const activity = forklift.currentActivity;
+      const records = Array(10).fill(null).map(() =>
+        generateTelemetry(forklift.forkliftId, activity)
+      );
+      telemetryData.push(...records);
+    });
+
     await Telemetry.insertMany(telemetryData);
     console.log(`✅ Created ${telemetryData.length} telemetry records`);
 

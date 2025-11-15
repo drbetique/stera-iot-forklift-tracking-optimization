@@ -10,6 +10,9 @@ const apiClient = axios.create({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
   },
 });
 
@@ -17,7 +20,8 @@ const api = {
   // Health check
   healthCheck: async () => {
     try {
-      const response = await apiClient.get('/health');
+      const timestamp = new Date().getTime();
+      const response = await apiClient.get(`/health?_t=${timestamp}`);
       return response.data;
     } catch (error) {
       console.error('Health check failed:', error);
@@ -25,32 +29,52 @@ const api = {
     }
   },
 
-  // Get all forklifts
-  getAllForklifts: async () => {
+  // Get all forklifts (matches web API)
+  getForklifts: async () => {
     try {
-      const response = await apiClient.get('/api/forklifts');
-      return response.data;
+      const timestamp = new Date().getTime();
+      const response = await apiClient.get(`/api/forklifts?_t=${timestamp}`);
+
+      if (!response.data.success) {
+        console.warn('API: Forklift fetch was not successful.', response.data.message);
+        return [];
+      }
+
+      console.log(`API: ${response.data.count} forklifts fetched.`);
+      return response.data.data || [];
     } catch (error) {
       console.error('Failed to fetch forklifts:', error);
       throw error;
     }
   },
 
-  // Get forklift by ID
-  getForklift: async (forkliftId) => {
+  // Legacy method for backward compatibility
+  getAllForklifts: async () => {
+    return api.getForklifts();
+  },
+
+  // Get forklift by ID (matches web API)
+  getForkliftById: async (id) => {
     try {
-      const response = await apiClient.get(`/api/forklifts/${forkliftId}`);
+      const timestamp = new Date().getTime();
+      const response = await apiClient.get(`/api/forklifts/${id}?_t=${timestamp}`);
       return response.data;
     } catch (error) {
       console.error('Failed to fetch forklift:', error);
-      throw error;
+      return null;
     }
   },
 
-  // Get latest telemetry
+  // Legacy method for backward compatibility
+  getForklift: async (forkliftId) => {
+    return api.getForkliftById(forkliftId);
+  },
+
+  // Get latest telemetry for a forklift
   getLatestTelemetry: async (forkliftId) => {
     try {
-      const response = await apiClient.get(`/api/telemetry/${forkliftId}/latest`);
+      const timestamp = new Date().getTime();
+      const response = await apiClient.get(`/api/telemetry/${forkliftId}/latest?_t=${timestamp}`);
       return response.data;
     } catch (error) {
       console.error('Failed to fetch telemetry:', error);
@@ -58,15 +82,33 @@ const api = {
     }
   },
 
-  // Get all stations
-  getAllStations: async () => {
+  // Get all telemetry (matches web API)
+  getTelemetry: async () => {
     try {
-      const response = await apiClient.get('/api/stations');
+      const timestamp = new Date().getTime();
+      const response = await apiClient.get(`/api/telemetry?_t=${timestamp}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch telemetry:', error);
+      return [];
+    }
+  },
+
+  // Get all stations (matches web API)
+  getStations: async () => {
+    try {
+      const timestamp = new Date().getTime();
+      const response = await apiClient.get(`/api/stations?_t=${timestamp}`);
       return response.data;
     } catch (error) {
       console.error('Failed to fetch stations:', error);
-      throw error;
+      return [];
     }
+  },
+
+  // Legacy method for backward compatibility
+  getAllStations: async () => {
+    return api.getStations();
   },
 };
 
