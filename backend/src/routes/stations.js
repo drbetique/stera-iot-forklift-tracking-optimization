@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Station = require('../models/Station');
+const { authenticateToken, requireRole } = require('../middleware/auth');
+
+// Apply authentication middleware to all routes
+router.use(authenticateToken);
 
 // GET - Get all stations
 router.get('/', async (req, res) => {
@@ -58,8 +62,8 @@ router.get('/:stationId', async (req, res) => {
   }
 });
 
-// POST - Create new station
-router.post('/', async (req, res) => {
+// POST - Create new station (Admin and Operator only)
+router.post('/', requireRole(['admin', 'operator']), async (req, res) => {
   try {
     const station = new Station(req.body);
     await station.save();
@@ -80,8 +84,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT - Update station
-router.put('/:stationId', async (req, res) => {
+// PUT - Update station (Admin and Operator only)
+router.put('/:stationId', requireRole(['admin', 'operator']), async (req, res) => {
   try {
     const { stationId } = req.params;
 

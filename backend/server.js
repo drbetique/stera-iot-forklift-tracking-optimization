@@ -9,6 +9,7 @@ require('dotenv').config();
 const connectDB = require('./src/config/database');
 
 // Import routes
+const authRoutes = require('./src/routes/auth');
 const telemetryRoutes = require('./src/routes/telemetry');
 const forkliftRoutes = require('./src/routes/forklifts');
 const stationRoutes = require('./src/routes/stations');
@@ -27,12 +28,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // Basic route
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Stera IoT Forklift Tracking API',
     version: '1.0.0',
     status: 'running',
     database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
     endpoints: {
+      auth: '/api/auth',
       telemetry: '/api/telemetry',
       forklifts: '/api/forklifts',
       stations: '/api/stations',
@@ -53,16 +55,18 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
+app.use('/api/auth', authRoutes); // Authentication routes (public)
 app.use('/api/telemetry', telemetryRoutes);
 app.use('/api/forklifts', forkliftRoutes);
 app.use('/api/stations', stationRoutes);
 
 // Handle 404
 app.use((req, res) => {
-  res.status(404).json({ 
+  res.status(404).json({
     success: false,
     error: 'Route not found',
     availableEndpoints: {
+      auth: '/api/auth',
       telemetry: '/api/telemetry',
       forklifts: '/api/forklifts',
       stations: '/api/stations'
@@ -73,7 +77,7 @@ app.use((req, res) => {
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ 
+  res.status(500).json({
     success: false,
     error: 'Something went wrong!',
     message: err.message
@@ -86,6 +90,12 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 http://localhost:${PORT}`);
   console.log(`📚 API Endpoints:`);
+  console.log(`   Auth:`);
+  console.log(`   - POST   /api/auth/login`);
+  console.log(`   - POST   /api/auth/register (Admin only)`);
+  console.log(`   - GET    /api/auth/me (Protected)`);
+  console.log(`   - POST   /api/auth/logout (Protected)`);
+  console.log(`   Data:`);
   console.log(`   - POST   /api/telemetry`);
   console.log(`   - GET    /api/telemetry/:forkliftId/latest`);
   console.log(`   - GET    /api/telemetry/:forkliftId/history`);

@@ -11,6 +11,7 @@ import ExportPanel from './ExportPanel';
 import HistoricalCharts from './HistoricalCharts';
 import DateRangeFilter from './DateRangeFilter';
 import api from '../../services/api';
+import UserMenu from '../UserMenu/UserMenu';
 import { formatNumber, formatPercentage } from '../../utils/formatters';
 
 const Dashboard = () => {
@@ -24,17 +25,14 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    console.log('Dashboard mounted - fetching initial data...');
     fetchForklifts();
-    
+
     // Set up polling every 10 seconds
     const interval = setInterval(() => {
-      console.log('Polling forklifts...');
       fetchForklifts();
     }, 10000);
-    
+
     return () => {
-      console.log('Dashboard unmounting - clearing interval');
       clearInterval(interval);
     };
   }, []);
@@ -45,18 +43,12 @@ const Dashboard = () => {
         setRefreshing(true);
       }
 
-      console.log('Fetching forklifts from API...');
-      const data = await api.getForklifts();
+      const forkliftData = await api.getForklifts();
 
-      console.log('Forklifts received:', data);
-      console.log('Forklift count:', data.length);
-
-      if (Array.isArray(data) && data.length > 0) {
-        setForklifts(data);
+      if (Array.isArray(forkliftData)) {
+        setForklifts(forkliftData);
         setError(null);
-        console.log('Forklifts state updated successfully');
       } else {
-        console.warn('No forklifts returned from API');
         setForklifts([]);
       }
 
@@ -65,7 +57,9 @@ const Dashboard = () => {
         setTimeout(() => setRefreshing(false), 500);
       }
     } catch (err) {
-      console.error('Error fetching forklifts:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching forklifts:', err);
+      }
       setError('Failed to load fleet data. Check backend connection.');
       setLoading(false);
       setRefreshing(false);
@@ -73,7 +67,6 @@ const Dashboard = () => {
   };
 
   const handleDateChange = (newDateRange) => {
-    console.log('Date range changed:', newDateRange);
     setDateRange(newDateRange);
   };
 
@@ -89,8 +82,6 @@ const Dashboard = () => {
       ? Math.round(forklifts.reduce((sum, f) => sum + (f.batteryLevel || 0), 0) / forklifts.length)
       : 0
   };
-
-  console.log('Dashboard stats:', stats);
 
   if (loading) {
     return (
@@ -190,6 +181,7 @@ const Dashboard = () => {
           <div className="header-actions">
             <NotificationPanel forklifts={forklifts} />
             <ExportPanel forklifts={forklifts} stats={stats} />
+            <UserMenu />
           </div>
           <div className="live-indicator">
             <span className="live-dot"></span>

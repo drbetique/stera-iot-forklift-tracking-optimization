@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Forklift = require('../models/Forklift');
+const { authenticateToken, requireRole } = require('../middleware/auth');
+
+// Apply authentication middleware to all routes
+router.use(authenticateToken);
 
 // GET - Get all forklifts
 router.get('/', async (req, res) => {
@@ -52,8 +56,8 @@ router.get('/:forkliftId', async (req, res) => {
   }
 });
 
-// POST - Create new forklift
-router.post('/', async (req, res) => {
+// POST - Create new forklift (Admin and Operator only)
+router.post('/', requireRole(['admin', 'operator']), async (req, res) => {
   try {
     const forklift = new Forklift(req.body);
     await forklift.save();
@@ -74,8 +78,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT - Update forklift
-router.put('/:forkliftId', async (req, res) => {
+// PUT - Update forklift (Admin and Operator only)
+router.put('/:forkliftId', requireRole(['admin', 'operator']), async (req, res) => {
   try {
     const { forkliftId } = req.params;
 

@@ -1,5 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, TextInput } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  RefreshControl,
+  ActivityIndicator,
+  TextInput,
+  ScrollView,
+  Image,
+  Animated
+} from 'react-native';
 import api from '../services/api';
 import { COLORS, SPACING, TYPOGRAPHY, BORDER_RADIUS, SHADOWS, COMMON_STYLES } from '../styles/theme';
 import { formatBattery, formatCoordinates, formatRelativeTime, getActivityColor, getBatteryColor } from '../utils/formatters';
@@ -12,6 +24,9 @@ export default function HomeScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('name'); // name, battery, activity
 
+  // Animation for LIVE indicator
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
   useEffect(() => {
     fetchData();
     checkConnection();
@@ -20,6 +35,22 @@ export default function HomeScreen({ navigation }) {
       fetchData();
       checkConnection();
     }, 10000);
+
+    // Pulse animation for LIVE indicator
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.2,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
 
     return () => clearInterval(interval);
   }, []);
@@ -40,7 +71,9 @@ export default function HomeScreen({ navigation }) {
         setForklifts(data);
       }
     } catch (error) {
-      console.error('Failed to fetch forklifts:', error);
+      if (__DEV__) {
+        console.error('Failed to fetch forklifts:', error);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -57,10 +90,33 @@ export default function HomeScreen({ navigation }) {
     total: forklifts.length,
     active: forklifts.filter(f => ['DRIVING', 'WORKING', 'IDLE'].includes(f.currentActivity)).length,
     working: forklifts.filter(f => f.currentActivity === 'WORKING').length,
-    idle: forklifts.filter(f => f.currentActivity === 'IDLE').length,
     avgBattery: forklifts.length > 0
       ? Math.round(forklifts.reduce((sum, f) => sum + (f.batteryLevel || 0), 0) / forklifts.length)
       : 0
+  };
+
+  // Activity distribution data
+  const activityData = {
+    DRIVING: forklifts.filter(f => f.currentActivity === 'DRIVING').length,
+    WORKING: forklifts.filter(f => f.currentActivity === 'WORKING').length,
+    IDLE: forklifts.filter(f => f.currentActivity === 'IDLE').length,
+    PARKED: forklifts.filter(f => f.currentActivity === 'PARKED').length,
+    CHARGING: forklifts.filter(f => f.currentActivity === 'CHARGING').length,
+  };
+
+  // Battery statistics
+  const batteryStats = {
+    average: stats.avgBattery,
+    critical: forklifts.filter(f => f.batteryLevel < 20).length,
+    warning: forklifts.filter(f => f.batteryLevel >= 20 && f.batteryLevel < 50).length,
+    good: forklifts.filter(f => f.batteryLevel >= 50).length,
+  };
+
+  // Fleet performance metrics
+  const fleetMetrics = {
+    utilization: stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0,
+    productive: activityData.DRIVING + activityData.WORKING,
+    standby: activityData.IDLE + activityData.PARKED,
   };
 
   // Filter and sort forklifts
@@ -180,18 +236,33 @@ export default function HomeScreen({ navigation }) {
   const filteredForklifts = getFilteredAndSortedForklifts();
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={[COLORS.primary]}
+          tintColor={COLORS.primary}
+        />
+      }
+    >
+      {/* Header with Logo and Title */}
       <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View>
-            <Text style={styles.title}>Stera IoT</Text>
-            <Text style={styles.subtitle}>Fleet Management</Text>
-          </View>
-          <View style={styles.liveIndicator}>
-            <View style={styles.liveDot} />
-            <Text style={styles.liveText}>LIVE</Text>
-          </View>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('../assets/stera-logo.jpg')}
+            style={styles.steraLogo}
+            resizeMode="contain"
+          />
+        </View>
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.title}>Forklift Fleet</Text>
+          <Text style={styles.title}>Management Dashboard</Text>
+        </View>
+        <View style={styles.liveIndicator}>
+          <Animated.View style={[styles.liveDot, { transform: [{ scale: pulseAnim }] }]} />
+          <Text style={styles.liveText}>LIVE</Text>
         </View>
         <View style={styles.connectionRow}>
           <View style={[styles.connectionDot, {
@@ -205,7 +276,7 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.total}</Text>
-          <Text style={styles.statLabel}>Total</Text>
+          <Text style={styles.statLabel}>Total Forklifts</Text>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.active}</Text>
@@ -219,6 +290,151 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.statNumber}>{stats.avgBattery}%</Text>
           <Text style={styles.statLabel}>Avg Battery</Text>
         </View>
+      </View>
+
+      {/* Analytics Section Title */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>📊 Analytics</Text>
+      </View>
+
+      {/* Activity Distribution */}
+      <View style={styles.analyticsCard}>
+        <Text style={styles.analyticsCardTitle}>Activity Distribution</Text>
+        <Text style={styles.analyticsCardSubtitle}>Real-time fleet status breakdown</Text>
+
+        {Object.entries(activityData).map(([activity, count]) => {
+          const percentage = stats.total > 0 ? Math.round((count / stats.total) * 100) : 0;
+          const activityIcons = {
+            DRIVING: '🚗',
+            WORKING: '⚙️',
+            IDLE: '⏸️',
+            PARKED: '🅿️',
+            CHARGING: '🔋'
+          };
+
+          return (
+            <View key={activity} style={styles.activityBar}>
+              <View style={styles.activityBarHeader}>
+                <Text style={styles.activityIcon}>{activityIcons[activity]}</Text>
+                <Text style={styles.activityName}>{activity}</Text>
+                <Text style={styles.activityCount}>{count}</Text>
+              </View>
+              <View style={styles.activityBarTrack}>
+                <View
+                  style={[
+                    styles.activityBarFill,
+                    {
+                      width: `${percentage}%`,
+                      backgroundColor: getActivityColor(activity)
+                    }
+                  ]}
+                >
+                  <Text style={styles.activityPercentage}>{percentage}%</Text>
+                </View>
+              </View>
+            </View>
+          );
+        })}
+
+        <View style={styles.activitySummary}>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryLabel}>Productive</Text>
+            <Text style={[styles.summaryValue, { color: COLORS.success }]}>
+              {fleetMetrics.productive}
+            </Text>
+          </View>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryLabel}>Standby</Text>
+            <Text style={[styles.summaryValue, { color: COLORS.warning }]}>
+              {fleetMetrics.standby}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Battery Status */}
+      <View style={styles.analyticsCard}>
+        <Text style={styles.analyticsCardTitle}>🔋 Battery Status</Text>
+        <Text style={styles.analyticsCardSubtitle}>Fleet power overview</Text>
+
+        <View style={styles.batteryGaugeContainer}>
+          <View style={styles.batteryGauge}>
+            <Text style={styles.batteryGaugeValue}>{stats.avgBattery}%</Text>
+            <Text style={styles.batteryGaugeLabel}>Average</Text>
+          </View>
+
+          <View style={styles.batteryStatsGrid}>
+            <View style={styles.batteryStatItem}>
+              <Text style={[styles.batteryStatIcon, { color: COLORS.success }]}>✓</Text>
+              <Text style={styles.batteryStatValue}>{batteryStats.good}</Text>
+              <Text style={styles.batteryStatLabel}>Good (≥50%)</Text>
+            </View>
+            <View style={styles.batteryStatItem}>
+              <Text style={[styles.batteryStatIcon, { color: COLORS.warning }]}>⚠</Text>
+              <Text style={styles.batteryStatValue}>{batteryStats.warning}</Text>
+              <Text style={styles.batteryStatLabel}>Warning</Text>
+            </View>
+            <View style={styles.batteryStatItem}>
+              <Text style={[styles.batteryStatIcon, { color: COLORS.error }]}>⚠</Text>
+              <Text style={styles.batteryStatValue}>{batteryStats.critical}</Text>
+              <Text style={styles.batteryStatLabel}>Critical</Text>
+            </View>
+          </View>
+        </View>
+
+        {batteryStats.critical > 0 && (
+          <View style={styles.batteryAlert}>
+            <Text style={styles.batteryAlertIcon}>⚠️</Text>
+            <Text style={styles.batteryAlertText}>
+              {batteryStats.critical} forklift{batteryStats.critical > 1 ? 's' : ''} need{batteryStats.critical === 1 ? 's' : ''} charging
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* Fleet Performance */}
+      <View style={styles.analyticsCard}>
+        <Text style={styles.analyticsCardTitle}>📈 Fleet Performance</Text>
+        <Text style={styles.analyticsCardSubtitle}>Key operational metrics</Text>
+
+        <View style={styles.performanceMetrics}>
+          <View style={styles.performanceMetric}>
+            <Text style={styles.performanceLabel}>Fleet Utilization</Text>
+            <Text style={styles.performanceValue}>{fleetMetrics.utilization}%</Text>
+            <View style={styles.utilizationBar}>
+              <View
+                style={[
+                  styles.utilizationBarFill,
+                  {
+                    width: `${fleetMetrics.utilization}%`,
+                    backgroundColor: fleetMetrics.utilization >= 70 ? COLORS.success :
+                                     fleetMetrics.utilization >= 40 ? COLORS.warning : COLORS.error
+                  }
+                ]}
+              />
+            </View>
+          </View>
+
+          <View style={styles.performanceRow}>
+            <View style={styles.performanceMetricSmall}>
+              <Text style={styles.performanceLabelSmall}>Productive Units</Text>
+              <Text style={[styles.performanceValueSmall, { color: COLORS.success }]}>
+                {fleetMetrics.productive}
+              </Text>
+            </View>
+            <View style={styles.performanceMetricSmall}>
+              <Text style={styles.performanceLabelSmall}>Standby Units</Text>
+              <Text style={[styles.performanceValueSmall, { color: COLORS.warning }]}>
+                {fleetMetrics.standby}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Fleet Overview Section */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>🚜 Fleet Overview ({stats.total} units)</Text>
       </View>
 
       {/* Search and Filter */}
@@ -268,37 +484,34 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       {/* Forklift List */}
-      <FlatList
-        data={filteredForklifts}
-        renderItem={renderForklift}
-        keyExtractor={item => item._id}
-        contentContainerStyle={styles.listContainer}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[COLORS.primary]}
-            tintColor={COLORS.primary}
-          />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyIcon}>🔍</Text>
-            <Text style={styles.emptyText}>
-              {searchQuery ? 'No forklifts match your search' : 'No forklifts found'}
-            </Text>
-            {searchQuery && (
-              <TouchableOpacity
-                style={styles.clearSearchButton}
-                onPress={() => setSearchQuery('')}
-              >
-                <Text style={styles.clearSearchText}>Clear Search</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        }
-      />
-    </View>
+      {filteredForklifts.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyIcon}>🔍</Text>
+          <Text style={styles.emptyText}>
+            {searchQuery ? 'No forklifts match your search' : 'No forklifts found'}
+          </Text>
+          {searchQuery && (
+            <TouchableOpacity
+              style={styles.clearSearchButton}
+              onPress={() => setSearchQuery('')}
+            >
+              <Text style={styles.clearSearchText}>Clear Search</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : (
+        <View style={styles.listContainer}>
+          {filteredForklifts.map(item => (
+            <View key={item._id}>
+              {renderForklift({ item })}
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Bottom padding for scroll */}
+      <View style={{ height: 20 }} />
+    </ScrollView>
   );
 }
 
@@ -325,42 +538,51 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xl,
     borderBottomLeftRadius: BORDER_RADIUS.xl,
     borderBottomRightRadius: BORDER_RADIUS.xl,
+    alignItems: 'center',
   },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  logoContainer: {
+    backgroundColor: 'white',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.md,
+    marginBottom: SPACING.md,
+    ...SHADOWS.md,
+  },
+  steraLogo: {
+    width: 120,
+    height: 40,
+  },
+  headerTextContainer: {
     alignItems: 'center',
     marginBottom: SPACING.md,
   },
   title: {
-    fontSize: TYPOGRAPHY.fontSize.xxxl,
+    fontSize: TYPOGRAPHY.fontSize.xl,
     fontWeight: TYPOGRAPHY.fontWeight.bold,
     color: COLORS.text.white,
-  },
-  subtitle: {
-    fontSize: TYPOGRAPHY.fontSize.sm,
-    color: COLORS.text.lighter,
-    marginTop: 2,
+    textAlign: 'center',
   },
   liveIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
     borderRadius: BORDER_RADIUS.round,
+    marginBottom: SPACING.sm,
   },
   liveDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: COLORS.error,
-    marginRight: SPACING.xs,
+    marginRight: SPACING.sm,
   },
   liveText: {
     color: COLORS.text.white,
-    fontSize: TYPOGRAPHY.fontSize.xs,
+    fontSize: TYPOGRAPHY.fontSize.sm,
     fontWeight: TYPOGRAPHY.fontWeight.bold,
+    letterSpacing: 1,
   },
   connectionRow: {
     flexDirection: 'row',
@@ -379,12 +601,14 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
     gap: SPACING.md,
   },
   statCard: {
     flex: 1,
+    minWidth: '45%',
     backgroundColor: COLORS.background.secondary,
     padding: SPACING.lg,
     borderRadius: BORDER_RADIUS.lg,
@@ -392,7 +616,7 @@ const styles = StyleSheet.create({
     ...SHADOWS.md,
   },
   statNumber: {
-    fontSize: TYPOGRAPHY.fontSize.xxxl,
+    fontSize: TYPOGRAPHY.fontSize.huge,
     fontWeight: TYPOGRAPHY.fontWeight.bold,
     color: COLORS.primary,
   },
@@ -401,6 +625,213 @@ const styles = StyleSheet.create({
     color: COLORS.text.secondary,
     marginTop: SPACING.xs,
     fontWeight: TYPOGRAPHY.fontWeight.medium,
+    textAlign: 'center',
+  },
+  sectionHeader: {
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.sm,
+  },
+  sectionTitle: {
+    fontSize: TYPOGRAPHY.fontSize.xl,
+    fontWeight: TYPOGRAPHY.fontWeight.bold,
+    color: COLORS.text.primary,
+  },
+  analyticsCard: {
+    backgroundColor: COLORS.background.secondary,
+    marginHorizontal: SPACING.lg,
+    marginBottom: SPACING.lg,
+    padding: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+    ...SHADOWS.md,
+  },
+  analyticsCardTitle: {
+    fontSize: TYPOGRAPHY.fontSize.lg,
+    fontWeight: TYPOGRAPHY.fontWeight.bold,
+    color: COLORS.text.primary,
+    marginBottom: SPACING.xs,
+  },
+  analyticsCardSubtitle: {
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.lg,
+  },
+  activityBar: {
+    marginBottom: SPACING.md,
+  },
+  activityBarHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.xs,
+  },
+  activityIcon: {
+    fontSize: TYPOGRAPHY.fontSize.lg,
+    marginRight: SPACING.sm,
+  },
+  activityName: {
+    flex: 1,
+    fontSize: TYPOGRAPHY.fontSize.base,
+    fontWeight: TYPOGRAPHY.fontWeight.semibold,
+    color: COLORS.text.primary,
+  },
+  activityCount: {
+    fontSize: TYPOGRAPHY.fontSize.base,
+    fontWeight: TYPOGRAPHY.fontWeight.bold,
+    color: COLORS.text.primary,
+  },
+  activityBarTrack: {
+    height: 28,
+    backgroundColor: COLORS.border.light,
+    borderRadius: BORDER_RADIUS.md,
+    overflow: 'hidden',
+  },
+  activityBarFill: {
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingRight: SPACING.sm,
+  },
+  activityPercentage: {
+    fontSize: TYPOGRAPHY.fontSize.xs,
+    fontWeight: TYPOGRAPHY.fontWeight.bold,
+    color: COLORS.text.white,
+  },
+  activitySummary: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: SPACING.lg,
+    paddingTop: SPACING.lg,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border.light,
+  },
+  summaryItem: {
+    alignItems: 'center',
+  },
+  summaryLabel: {
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.xs,
+  },
+  summaryValue: {
+    fontSize: TYPOGRAPHY.fontSize.xxl,
+    fontWeight: TYPOGRAPHY.fontWeight.bold,
+  },
+  batteryGaugeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.lg,
+  },
+  batteryGauge: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...SHADOWS.md,
+  },
+  batteryGaugeValue: {
+    fontSize: TYPOGRAPHY.fontSize.xxl,
+    fontWeight: TYPOGRAPHY.fontWeight.bold,
+    color: COLORS.text.white,
+  },
+  batteryGaugeLabel: {
+    fontSize: TYPOGRAPHY.fontSize.xs,
+    color: COLORS.text.white,
+    marginTop: SPACING.xs,
+  },
+  batteryStatsGrid: {
+    flex: 1,
+    gap: SPACING.sm,
+  },
+  batteryStatItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background.primary,
+    padding: SPACING.sm,
+    borderRadius: BORDER_RADIUS.md,
+  },
+  batteryStatIcon: {
+    fontSize: TYPOGRAPHY.fontSize.lg,
+    marginRight: SPACING.sm,
+  },
+  batteryStatValue: {
+    fontSize: TYPOGRAPHY.fontSize.md,
+    fontWeight: TYPOGRAPHY.fontWeight.bold,
+    color: COLORS.text.primary,
+    marginRight: SPACING.sm,
+  },
+  batteryStatLabel: {
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    color: COLORS.text.secondary,
+    flex: 1,
+  },
+  batteryAlert: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.error + '20',
+    padding: SPACING.md,
+    borderRadius: BORDER_RADIUS.md,
+    marginTop: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.error,
+  },
+  batteryAlertIcon: {
+    fontSize: TYPOGRAPHY.fontSize.lg,
+    marginRight: SPACING.sm,
+  },
+  batteryAlertText: {
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    color: COLORS.error,
+    fontWeight: TYPOGRAPHY.fontWeight.semibold,
+    flex: 1,
+  },
+  performanceMetrics: {
+    gap: SPACING.lg,
+  },
+  performanceMetric: {
+    alignItems: 'center',
+  },
+  performanceLabel: {
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.xs,
+  },
+  performanceValue: {
+    fontSize: TYPOGRAPHY.fontSize.huge,
+    fontWeight: TYPOGRAPHY.fontWeight.bold,
+    color: COLORS.primary,
+    marginBottom: SPACING.sm,
+  },
+  utilizationBar: {
+    width: '100%',
+    height: 12,
+    backgroundColor: COLORS.border.light,
+    borderRadius: BORDER_RADIUS.round,
+    overflow: 'hidden',
+  },
+  utilizationBarFill: {
+    height: '100%',
+  },
+  performanceRow: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+  },
+  performanceMetricSmall: {
+    flex: 1,
+    backgroundColor: COLORS.background.primary,
+    padding: SPACING.md,
+    borderRadius: BORDER_RADIUS.md,
+    alignItems: 'center',
+  },
+  performanceLabelSmall: {
+    fontSize: TYPOGRAPHY.fontSize.xs,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.xs,
+  },
+  performanceValueSmall: {
+    fontSize: TYPOGRAPHY.fontSize.xxl,
+    fontWeight: TYPOGRAPHY.fontWeight.bold,
   },
   controlsContainer: {
     paddingHorizontal: SPACING.lg,
@@ -457,8 +888,7 @@ const styles = StyleSheet.create({
     color: COLORS.text.white,
   },
   listContainer: {
-    padding: SPACING.lg,
-    paddingTop: 0,
+    paddingHorizontal: SPACING.lg,
   },
   forkliftCard: {
     backgroundColor: COLORS.background.secondary,

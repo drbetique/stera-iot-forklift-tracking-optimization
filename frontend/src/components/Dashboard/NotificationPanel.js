@@ -183,10 +183,12 @@ const NotificationPanel = ({ forklifts }) => {
 
   return (
     <>
-      <button className="notification-button" onClick={togglePanel}>
+      <button className="notification-button" onClick={togglePanel} aria-label="Notifications">
         <span className="bell-icon">🔔</span>
         {unreadCount > 0 && (
-          <span className="notification-badge">{unreadCount}</span>
+          <span className="notification-badge">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
         )}
       </button>
 

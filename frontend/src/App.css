@@ -1,17 +1,491 @@
+/* ==================== GLOBAL RESET & BASE STYLES ==================== */
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+html {
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  /* Improved text rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 body {
+  margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  color: #e2e8f0;
+  background: #1a202c;
+  overflow-x: hidden;
 }
 
 .App {
   min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ==================== IMPROVED FOCUS STATES ==================== */
+
+/* Custom focus ring for better accessibility */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 3px solid #f97316;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Remove focus ring for mouse users, keep for keyboard users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ==================== SMOOTH TRANSITIONS ==================== */
+
+/* Add smooth transitions to interactive elements */
+a,
+button,
+input,
+textarea,
+select {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==================== TEXT SELECTION ==================== */
+
+::selection {
+  background-color: #f97316;
+  color: white;
+}
+
+::-moz-selection {
+  background-color: #f97316;
+  color: white;
+}
+
+/* ==================== SCROLLBAR STYLING ==================== */
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2d3748;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+  border-radius: 10px;
+  border: 2px solid #2d3748;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ea580c 0%, #dc2626 100%);
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #f97316 #2d3748;
+}
+
+/* ==================== UTILITY CLASSES ==================== */
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Skip to main content for accessibility */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #f97316;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  font-weight: 600;
+  z-index: 100;
+  border-radius: 0 0 4px 0;
+}
+
+.skip-to-content:focus {
+  top: 0;
+  outline: 3px solid white;
+  outline-offset: 2px;
+}
+
+/* ==================== LOADING STATES ==================== */
+
+/* Global loading spinner */
+.loading-spinner-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  gap: 16px;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(249, 115, 22, 0.2);
+  border-top-color: #f97316;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  color: #a0aec0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ==================== ANIMATIONS ==================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+/* Apply fade in to page transitions */
+.App > * {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ==================== ACCESSIBILITY IMPROVEMENTS ==================== */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  body {
+    background: #000;
+    color: #fff;
+  }
+
+  a,
+  button {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==================== PRINT STYLES ==================== */
+
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .App {
+    background: white;
+  }
+
+  /* Hide non-essential elements when printing */
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Ensure content is readable */
+  * {
+    color: black !important;
+    background: white !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Page break control */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+
+  img,
+  table,
+  figure {
+    page-break-inside: avoid;
+  }
+}
+
+/* ==================== RESPONSIVE IMAGES ==================== */
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ==================== FORM IMPROVEMENTS ==================== */
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/* Remove default button styles */
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Improve input appearance */
+input,
+textarea,
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+/* ==================== LINK IMPROVEMENTS ==================== */
+
+a {
+  color: #f97316;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #ea580c;
+  text-decoration: underline;
+}
+
+a:active {
+  color: #dc2626;
+}
+
+/* ==================== TOUCH IMPROVEMENTS ==================== */
+
+/* Better touch targets on mobile */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Remove hover effects on touch devices */
+  *:hover {
+    /* Hover styles won't apply on touch devices */
+  }
+}
+
+/* Remove tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ==================== CODE & PRE STYLING ==================== */
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+  background: #2d3748;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: #f97316;
+}
+
+pre {
+  background: #2d3748;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid #4a5568;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  color: #e2e8f0;
+}
+
+/* ==================== TABLE IMPROVEMENTS ==================== */
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 12px;
+}
+
+/* ==================== RESPONSIVE TYPOGRAPHY ==================== */
+
+h1 {
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+h3 {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+h4 {
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+}
+
+p {
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  line-height: 1.6;
+}
+
+/* ==================== IMPROVED BUTTON STATES ==================== */
+
+button:disabled,
+button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ==================== LAYOUT IMPROVEMENTS ==================== */
+
+/* Prevent layout shift */
+.App {
+  contain: layout style paint;
 }

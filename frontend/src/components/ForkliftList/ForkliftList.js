@@ -41,7 +41,6 @@ function ForkliftList() {
   const [selectedForklift, setSelectedForklift] = useState(null);
 
   const fetchForklifts = async (isManualRefresh = false) => {
-    // setLoading(true) is not called here to allow for silent background refresh
     try {
       if (isManualRefresh) {
         setRefreshing(true);
@@ -56,7 +55,9 @@ function ForkliftList() {
       }
     } catch (err) {
       setError('Failed to fetch forklifts');
-      console.error(err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(err);
+      }
       setRefreshing(false);
     } finally {
       setLoading(false);

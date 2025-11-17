@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const Telemetry = require('../models/Telemetry');
 const Forklift = require('../models/Forklift');
+const { authenticateToken, optionalAuth } = require('../middleware/auth');
 
-// POST - Receive telemetry data from ESP32
+// POST - Receive telemetry data from ESP32 (No auth required for hardware)
+// In production, consider using API keys for hardware authentication
 router.post('/', async (req, res) => {
   try {
     const telemetryData = req.body;
@@ -39,6 +41,9 @@ router.post('/', async (req, res) => {
     });
   }
 });
+
+// Apply authentication to read endpoints
+router.use(authenticateToken);
 
 // GET - Get latest telemetry for a forklift
 router.get('/:forkliftId/latest', async (req, res) => {

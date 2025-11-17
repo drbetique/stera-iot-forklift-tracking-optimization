@@ -56,6 +56,10 @@
   letter-spacing: -0.8px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   line-height: 1.2;
+  max-width: calc(100% - 500px); /* Prevent overlap with logo (150px) + actions (250px) + LIVE (100px) */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .header-actions {
@@ -63,9 +67,10 @@
   align-items: center;
   gap: 12px;
   position: absolute;
-  right: 140px;
+  right: 160px; /* Increased from 140px to add more spacing */
   top: 50%;
   transform: translateY(-50%);
+  z-index: 50; /* Ensure header actions are above other elements */
 }
 
 .live-indicator {
@@ -81,6 +86,7 @@
   border-radius: 8px;
   border: 2px solid #f97316;
   box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+  z-index: 10; /* Below header-actions and user-menu */
 }
 
 .live-indicator span {
@@ -317,6 +323,7 @@ p {
 
   .dashboard-title {
     font-size: 28px;
+    max-width: calc(100% - 420px); /* Adjust for smaller screens */
   }
 
   .stat-number {
@@ -351,6 +358,8 @@ p {
     font-size: 24px;
     order: 2;
     text-align: center;
+    max-width: 100%; /* Full width in stacked layout */
+    white-space: normal; /* Allow wrapping in stacked layout */
   }
 
   .header-actions {

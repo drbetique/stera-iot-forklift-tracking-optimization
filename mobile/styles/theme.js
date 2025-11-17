@@ -34,19 +34,19 @@ export const COLORS = {
   error: '#ef4444',
   info: '#3b82f6',
 
-  // Background Colors
+  // Background Colors (Dark theme like web dashboard)
   background: {
-    primary: '#f3f4f6',    // Light gray
-    secondary: '#ffffff',  // White
+    primary: '#1a202c',    // Dark background (matches web)
+    secondary: '#2d3748',  // Card background (matches web)
     dark: '#1f2937',       // Dark gray
     darker: '#111827'      // Darker gray
   },
 
-  // Text Colors
+  // Text Colors (Dark theme)
   text: {
-    primary: '#111827',    // Almost black
-    secondary: '#4b5563',  // Medium gray
-    tertiary: '#9ca3af',   // Light gray
+    primary: '#ffffff',    // White (for dark backgrounds)
+    secondary: '#a0aec0',  // Light gray (matches web)
+    tertiary: '#718096',   // Medium gray
     white: '#ffffff',
     light: 'rgba(255, 255, 255, 0.9)',
     lighter: 'rgba(255, 255, 255, 0.7)'
