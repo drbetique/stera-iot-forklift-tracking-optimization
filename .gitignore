@@ -35,6 +35,7 @@ Thumbs.db
 *.temp
 
 # Development Documentation (not for version control)
+CLAUDE.md
 GEMINI.md
 COMPLETION_SUMMARY.md
 MOBILE_SETUP.md
