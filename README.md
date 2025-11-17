@@ -522,8 +522,7 @@ All rights reserved. Unauthorized copying or distribution is prohibited.
 
 For issues, questions, or suggestions:
 - Create an issue in the GitHub repository
-- Contact: support@stera-technologies.com
-- Documentation: See CLAUDE.md for architecture details
+- Contact: victor.betiku@gmail.com
 
 ## Roadmap
 
@@ -565,4 +564,4 @@ For issues, questions, or suggestions:
 
 ---
 
-**Made with care by Stera Technologies**
+**Made with care for Stera Technologies**
