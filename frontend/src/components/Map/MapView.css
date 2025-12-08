@@ -3,7 +3,11 @@
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-top: 2rem;
+  margin-top: 0;
+  width: 100%;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
 }
 
 .map-header {
@@ -63,8 +67,17 @@
   100% { transform: rotate(360deg); }
 }
 
+.map-container > div:last-child {
+  flex: 1;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
 .leaflet-container {
   font-family: inherit;
+  height: 100% !important;
+  width: 100%;
+  border-radius: 12px;
 }
 
 .custom-marker {
@@ -112,6 +125,11 @@
 }
 
 @media (max-width: 768px) {
+  .map-container {
+    height: 400px;
+    padding: 1rem;
+  }
+
   .map-header {
     flex-direction: column;
     align-items: flex-start;

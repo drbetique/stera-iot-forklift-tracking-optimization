@@ -1,0 +1,2 @@
+# Don't commit secrets file with credentials
+secrets.h

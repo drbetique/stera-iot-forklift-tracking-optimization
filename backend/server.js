@@ -13,6 +13,8 @@ const authRoutes = require('./src/routes/auth');
 const telemetryRoutes = require('./src/routes/telemetry');
 const forkliftRoutes = require('./src/routes/forklifts');
 const stationRoutes = require('./src/routes/stations');
+const sensorRoutes = require('./src/routes/sensors');
+const analyticsRoutes = require('./src/routes/analytics');
 
 const app = express();
 
@@ -38,6 +40,8 @@ app.get('/', (req, res) => {
       telemetry: '/api/telemetry',
       forklifts: '/api/forklifts',
       stations: '/api/stations',
+      sensors: '/api/sensors',
+      analytics: '/api/analytics',
       health: '/health'
     }
   });
@@ -59,6 +63,8 @@ app.use('/api/auth', authRoutes); // Authentication routes (public)
 app.use('/api/telemetry', telemetryRoutes);
 app.use('/api/forklifts', forkliftRoutes);
 app.use('/api/stations', stationRoutes);
+app.use('/api/sensors', sensorRoutes); // Sensor data from InfluxDB
+app.use('/api/analytics', analyticsRoutes); // Analytics data from MQTT analytics service
 
 // Handle 404
 app.use((req, res) => {
@@ -69,7 +75,9 @@ app.use((req, res) => {
       auth: '/api/auth',
       telemetry: '/api/telemetry',
       forklifts: '/api/forklifts',
-      stations: '/api/stations'
+      stations: '/api/stations',
+      sensors: '/api/sensors',
+      analytics: '/api/analytics'
     }
   });
 });
@@ -104,6 +112,12 @@ app.listen(PORT, () => {
   console.log(`   - GET    /api/forklifts/:forkliftId`);
   console.log(`   - GET    /api/stations`);
   console.log(`   - POST   /api/stations`);
+  console.log(`   Analytics:`);
+  console.log(`   - POST   /api/analytics`);
+  console.log(`   - GET    /api/analytics/latest`);
+  console.log(`   - GET    /api/analytics/history`);
+  console.log(`   - GET    /api/analytics/impact-events`);
+  console.log(`   - GET    /api/analytics/fleet-summary`);
 });
 
 module.exports = app;

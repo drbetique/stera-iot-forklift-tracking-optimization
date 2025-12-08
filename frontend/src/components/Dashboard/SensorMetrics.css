@@ -1,0 +1,194 @@
+.sensor-metrics {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sensor-metrics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.sensor-metrics-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #2c3e50;
+}
+
+.sensor-status {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.sensor-status.moving {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.sensor-status.stationary {
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+/* No Data State */
+.no-sensor-data {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6c757d;
+}
+
+.no-sensor-data p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Key Metrics Cards */
+.sensor-key-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.metric-icon {
+  font-size: 2rem;
+}
+
+.metric-content {
+  flex: 1;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.metric-sublabel {
+  font-size: 0.75rem;
+  color: #6c757d;
+}
+
+/* Vibration Levels */
+.vibration-low {
+  color: #28a745;
+}
+
+.vibration-medium {
+  color: #ffc107;
+}
+
+.vibration-high {
+  color: #dc3545;
+}
+
+.vibration-unknown {
+  color: #6c757d;
+}
+
+/* Tilt Levels */
+.tilt-low {
+  color: #28a745;
+}
+
+.tilt-medium {
+  color: #ffc107;
+}
+
+.tilt-high {
+  color: #dc3545;
+}
+
+.tilt-unknown {
+  color: #6c757d;
+}
+
+/* Detailed Readings */
+.sensor-details {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.sensor-group h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  color: #495057;
+  font-weight: 600;
+}
+
+.sensor-readings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.sensor-reading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.reading-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.reading-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2c3e50;
+  font-family: 'Courier New', monospace;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sensor-key-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .sensor-readings {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-card {
+    padding: 0.75rem;
+  }
+
+  .metric-icon {
+    font-size: 1.5rem;
+  }
+
+  .metric-value {
+    font-size: 1.25rem;
+  }
+}

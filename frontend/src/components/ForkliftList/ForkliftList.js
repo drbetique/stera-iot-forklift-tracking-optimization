@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
 import api from '../../services/api';
 import './ForkliftList.css';
+import ForkliftDetailsModal from './ForkliftDetailsModal';
 import {
   formatTime,
   formatCoordinate,
@@ -173,105 +173,6 @@ function ForkliftList() {
     );
   }
 
-  // Details Modal
-  const detailsModal = selectedForklift && (
-    <div className="details-modal-overlay" onClick={closeDetailsModal}>
-      <div className="details-modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="details-modal-header">
-          <div className="details-header-info">
-            <span className="forklift-icon-large">🚜</span>
-            <div>
-              <h2>{selectedForklift.name || 'Unnamed Forklift'}</h2>
-              <p className="details-id">{selectedForklift.forkliftId || 'No ID'}</p>
-            </div>
-          </div>
-          <button
-            className="close-details-btn"
-            onClick={closeDetailsModal}
-            aria-label="Close details"
-          >
-            &times;
-          </button>
-        </div>
-
-        <div className="details-modal-body">
-          <div className="details-section">
-            <h3>Status Information</h3>
-            <div className="details-grid">
-              <div className="detail-item">
-                <span className="detail-label">Activity</span>
-                <span
-                  className="detail-value activity-badge"
-                  style={{ backgroundColor: getActivityColor(selectedForklift.currentActivity) }}
-                >
-                  {getActivityIcon(selectedForklift.currentActivity)} {selectedForklift.currentActivity || 'UNKNOWN'}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">Status</span>
-                <span className={`status-badge ${selectedForklift.status ? selectedForklift.status.toLowerCase() : 'unknown'}`}>
-                  <span className="status-dot"></span>
-                  {capitalize(selectedForklift.status)}
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">Model</span>
-                <span className="detail-value">{selectedForklift.model || 'N/A'}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">Last Updated</span>
-                <span className="detail-value">{formatTime(selectedForklift.lastSeen, true)}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="details-section">
-            <h3>Battery Status</h3>
-            <div className="battery-details">
-              <div className="battery-bar-large">
-                <div
-                  className="battery-fill-large"
-                  style={{
-                    width: `${selectedForklift.batteryLevel || 0}%`,
-                    backgroundColor: getBatteryColor(selectedForklift.batteryLevel || 0)
-                  }}
-                >
-                  <span className="battery-percentage-large">{formatPercentage(selectedForklift.batteryLevel || 0)}</span>
-                </div>
-              </div>
-              <p className="battery-status">
-                {getBatteryIcon(selectedForklift.batteryLevel || 0)}
-                {selectedForklift.batteryLevel >= 80 ? ' Fully Charged' :
-                 selectedForklift.batteryLevel >= 40 ? ' Good' :
-                 selectedForklift.batteryLevel >= 20 ? ' Low - Charge Soon' :
-                 ' Critical - Charge Immediately'}
-              </p>
-            </div>
-          </div>
-
-          {selectedForklift.currentLocation && (
-            <div className="details-section">
-              <h3>Location</h3>
-              <div className="location-details">
-                <p>
-                  <strong>Latitude:</strong> {formatCoordinate(selectedForklift.currentLocation.latitude)}
-                </p>
-                <p>
-                  <strong>Longitude:</strong> {formatCoordinate(selectedForklift.currentLocation.longitude)}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="details-modal-footer">
-          <button className="close-details-footer-btn" onClick={closeDetailsModal}>
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <>
@@ -453,10 +354,12 @@ function ForkliftList() {
       )}
     </div>
 
-    {/* Render details modal using Portal */}
-    {detailsModal && ReactDOM.createPortal(
-      detailsModal,
-      document.body
+    {/* Render comprehensive details modal */}
+    {selectedForklift && (
+      <ForkliftDetailsModal
+        forklift={selectedForklift}
+        onClose={closeDetailsModal}
+      />
     )}
     </>
   );

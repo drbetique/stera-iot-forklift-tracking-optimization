@@ -3,25 +3,27 @@ const router = express.Router();
 const Telemetry = require('../models/Telemetry');
 const Forklift = require('../models/Forklift');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
+const { enrichTelemetryData } = require('../utils/activityClassifier');
 
 // POST - Receive telemetry data from ESP32 (No auth required for hardware)
 // In production, consider using API keys for hardware authentication
 router.post('/', async (req, res) => {
   try {
-    const telemetryData = req.body;
+    // Enrich telemetry data with calculated activity states
+    const enrichedData = enrichTelemetryData(req.body);
 
     // Save telemetry to database
-    const telemetry = new Telemetry(telemetryData);
+    const telemetry = new Telemetry(enrichedData);
     await telemetry.save();
 
     // Update forklift last seen and location
     await Forklift.findOneAndUpdate(
-      { forkliftId: telemetryData.forkliftId },
+      { forkliftId: enrichedData.forkliftId },
       {
         lastSeen: new Date(),
-        currentLocation: telemetryData.gps,
-        currentActivity: telemetryData.activity.state,
-        batteryLevel: telemetryData.ultrasonic?.loadDetected ? 80 : 90 // Placeholder
+        currentLocation: enrichedData.gps,
+        currentActivity: enrichedData.activity.state,
+        batteryLevel: enrichedData.ultrasonic?.loadDetected ? 80 : 90 // Placeholder
       },
       { upsert: true, new: true }
     );

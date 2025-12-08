@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm pkg set:*)"
+      "Bash(node renameForklifts.js:*)",
+      "Bash(taskkill:*)",
+      "Bash(if exist node_modules.cache rd /s /q node_modules.cache)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(npm start)",
+      "Bash(npm run dev)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

@@ -4,6 +4,14 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
 # Environment variables
 .env
 .env.local
@@ -33,10 +41,12 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+nul
 
 # Development Documentation (not for version control)
 CLAUDE.md
 GEMINI.md
+ARCHITECTURE.md
 COMPLETION_SUMMARY.md
 MOBILE_SETUP.md
 USER_MANAGEMENT_GUIDE.md

@@ -212,6 +212,102 @@ const api = {
     }
   },
 
+  /* ==================== Sensor Data APIs (InfluxDB) ==================== */
+
+  /**
+   * Fetch latest sensor data for a specific forklift from InfluxDB
+   * @param {string} forkliftId - Forklift ID
+   * @returns {Promise<Object|null>} Latest sensor data or null
+   */
+  async getLatestSensorData(forkliftId) {
+    try {
+      const timestamp = new Date().getTime();
+      const response = await fetch(
+        `${API_BASE_URL}/sensors/${forkliftId}/latest?_t=${timestamp}`,
+        {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          cache: 'no-store'
+        }
+      );
+
+      await handleResponse(response);
+
+      const result = await response.json();
+      return result.data || null;
+    } catch (error) {
+      console.error('API: Error fetching latest sensor data:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Fetch sensor data history for a specific forklift from InfluxDB
+   * @param {string} forkliftId - Forklift ID
+   * @param {Object} options - Query options (startTime, endTime, limit)
+   * @returns {Promise<Array>} Array of sensor data
+   */
+  async getSensorHistory(forkliftId, options = {}) {
+    try {
+      const { startTime, endTime, limit = 100 } = options;
+      const params = new URLSearchParams({ limit });
+
+      if (startTime) params.append('startTime', startTime);
+      if (endTime) params.append('endTime', endTime);
+
+      const timestamp = new Date().getTime();
+      params.append('_t', timestamp);
+
+      const response = await fetch(
+        `${API_BASE_URL}/sensors/${forkliftId}/history?${params}`,
+        {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          cache: 'no-store'
+        }
+      );
+
+      await handleResponse(response);
+
+      const result = await response.json();
+      return result.data || [];
+    } catch (error) {
+      console.error('API: Error fetching sensor history:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Fetch aggregated sensor statistics for a specific forklift
+   * @param {string} forkliftId - Forklift ID
+   * @param {string} window - Time window (e.g., '5m', '1h')
+   * @returns {Promise<Array>} Array of aggregated statistics
+   */
+  async getSensorStats(forkliftId, window = '5m') {
+    try {
+      const params = new URLSearchParams({ window });
+      const timestamp = new Date().getTime();
+      params.append('_t', timestamp);
+
+      const response = await fetch(
+        `${API_BASE_URL}/sensors/${forkliftId}/stats?${params}`,
+        {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          cache: 'no-store'
+        }
+      );
+
+      await handleResponse(response);
+
+      const result = await response.json();
+      return result.data || [];
+    } catch (error) {
+      console.error('API: Error fetching sensor stats:', error);
+      return [];
+    }
+  },
+
   /* ==================== User Management APIs (Admin Only) ==================== */
 
   /**
@@ -355,6 +451,136 @@ const api = {
     } catch (error) {
       console.error('API: Error deleting user:', error);
       throw error;
+    }
+  },
+
+  /* ==================== Analytics APIs (MongoDB) ==================== */
+
+  /**
+   * Fetch latest analytics data
+   * @param {string} type - Optional analytics type filter
+   * @returns {Promise<Object|null>} Latest analytics data or null
+   */
+  async getLatestAnalytics(type = null) {
+    try {
+      const params = new URLSearchParams();
+      if (type) params.append('type', type);
+      const timestamp = new Date().getTime();
+      params.append('_t', timestamp);
+
+      const response = await fetch(
+        `${API_BASE_URL}/analytics/latest?${params}`,
+        {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          cache: 'no-store'
+        }
+      );
+
+      await handleResponse(response);
+
+      const result = await response.json();
+      return result.data || null;
+    } catch (error) {
+      console.error('API: Error fetching latest analytics:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Fetch fleet summary analytics
+   * @returns {Promise<Object|null>} Fleet summary data or null
+   */
+  async getFleetSummary() {
+    try {
+      const timestamp = new Date().getTime();
+      const response = await fetch(
+        `${API_BASE_URL}/analytics/fleet-summary?_t=${timestamp}`,
+        {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          cache: 'no-store'
+        }
+      );
+
+      await handleResponse(response);
+
+      const result = await response.json();
+      return result.data || null;
+    } catch (error) {
+      console.error('API: Error fetching fleet summary:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Fetch impact events
+   * @param {Object} options - Query options (forkliftId, limit, severity)
+   * @returns {Promise<Array>} Array of impact events
+   */
+  async getImpactEvents(options = {}) {
+    try {
+      const { forkliftId, limit = 20, severity } = options;
+      const params = new URLSearchParams({ limit });
+
+      if (forkliftId) params.append('forkliftId', forkliftId);
+      if (severity) params.append('severity', severity);
+
+      const timestamp = new Date().getTime();
+      params.append('_t', timestamp);
+
+      const response = await fetch(
+        `${API_BASE_URL}/analytics/impact-events?${params}`,
+        {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          cache: 'no-store'
+        }
+      );
+
+      await handleResponse(response);
+
+      const result = await response.json();
+      return result.data || [];
+    } catch (error) {
+      console.error('API: Error fetching impact events:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Fetch analytics history
+   * @param {Object} options - Query options (type, startDate, endDate, limit)
+   * @returns {Promise<Array>} Array of analytics records
+   */
+  async getAnalyticsHistory(options = {}) {
+    try {
+      const { type, startDate, endDate, limit = 100 } = options;
+      const params = new URLSearchParams({ limit });
+
+      if (type) params.append('type', type);
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+
+      const timestamp = new Date().getTime();
+      params.append('_t', timestamp);
+
+      const response = await fetch(
+        `${API_BASE_URL}/analytics/history?${params}`,
+        {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          cache: 'no-store'
+        }
+      );
+
+      await handleResponse(response);
+
+      const result = await response.json();
+      return result.data || [];
+    } catch (error) {
+      console.error('API: Error fetching analytics history:', error);
+      return [];
     }
   }
 };
