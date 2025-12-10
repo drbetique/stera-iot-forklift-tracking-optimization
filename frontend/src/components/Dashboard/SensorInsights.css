@@ -1,0 +1,378 @@
+.sensor-insights {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid #334155;
+}
+
+.insights-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #334155;
+}
+
+.insights-header h3 {
+  font-size: 20px;
+  color: #f1f5f9;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.last-update {
+  font-size: 12px;
+  color: #94a3b8;
+  background: #0f172a;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+}
+
+/* Insights Grid */
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* Insight Cards */
+.insight-card {
+  background: #0f172a;
+  border-radius: 12px;
+  padding: 20px;
+  border: 2px solid #334155;
+  display: flex;
+  gap: 16px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.insight-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+}
+
+.insight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border-color: #475569;
+}
+
+/* Health Score Specific */
+.insight-card.excellent::before {
+  background: linear-gradient(180deg, #10b981, #059669);
+}
+.insight-card.good::before {
+  background: linear-gradient(180deg, #f59e0b, #d97706);
+}
+.insight-card.fair::before {
+  background: linear-gradient(180deg, #f97316, #ea580c);
+}
+.insight-card.poor::before {
+  background: linear-gradient(180deg, #ef4444, #dc2626);
+}
+
+/* Vibration Levels */
+.insight-card.vibration.smooth::before {
+  background: linear-gradient(180deg, #10b981, #059669);
+}
+.insight-card.vibration.normal::before {
+  background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+}
+.insight-card.vibration.rough::before {
+  background: linear-gradient(180deg, #f59e0b, #d97706);
+}
+.insight-card.vibration.very-rough::before {
+  background: linear-gradient(180deg, #ef4444, #dc2626);
+}
+
+/* Temperature Levels */
+.insight-card.temperature.cool::before {
+  background: linear-gradient(180deg, #06b6d4, #0891b2);
+}
+.insight-card.temperature.normal::before {
+  background: linear-gradient(180deg, #10b981, #059669);
+}
+.insight-card.temperature.warm::before {
+  background: linear-gradient(180deg, #f59e0b, #d97706);
+}
+.insight-card.temperature.hot::before {
+  background: linear-gradient(180deg, #ef4444, #dc2626);
+}
+
+/* Movement Levels */
+.insight-card.movement.parked::before {
+  background: linear-gradient(180deg, #6b7280, #4b5563);
+}
+.insight-card.movement.idle::before {
+  background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+}
+.insight-card.movement.driving::before {
+  background: linear-gradient(180deg, #10b981, #059669);
+}
+.insight-card.movement.working::before {
+  background: linear-gradient(180deg, #f59e0b, #d97706);
+}
+
+/* Tilt Levels */
+.insight-card.tilt.safe::before {
+  background: linear-gradient(180deg, #10b981, #059669);
+}
+.insight-card.tilt.caution::before {
+  background: linear-gradient(180deg, #f59e0b, #d97706);
+}
+.insight-card.tilt.danger::before {
+  background: linear-gradient(180deg, #ef4444, #dc2626);
+}
+
+/* Impact Alert */
+.insight-card.impact-alert {
+  background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
+  border: 2px solid #dc2626;
+  animation: pulseCard 2s ease-in-out infinite;
+}
+
+.insight-card.impact-alert::before {
+  background: linear-gradient(180deg, #ef4444, #dc2626);
+}
+
+@keyframes pulseCard {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Insight Icon */
+.insight-icon {
+  font-size: 36px;
+  min-width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.insight-icon.pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* Insight Content */
+.insight-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.insight-content h4 {
+  font-size: 12px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+.insight-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 8px 0;
+  line-height: 1;
+}
+
+.insight-description {
+  font-size: 13px;
+  color: #cbd5e1;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.metric-detail {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #64748b;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Health Bar */
+.health-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.health-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #3b82f6);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.insight-card.excellent .health-fill {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.insight-card.good .health-fill {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.insight-card.fair .health-fill {
+  background: linear-gradient(90deg, #f97316, #ea580c);
+}
+
+.insight-card.poor .health-fill {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+/* Quick Stats Bar */
+.quick-stats {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: #0f172a;
+  border-radius: 12px;
+  border: 1px solid #334155;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  flex: 1;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f1f5f9;
+  font-family: 'Courier New', monospace;
+}
+
+.stat-value.activity-parked {
+  color: #6b7280;
+}
+
+.stat-value.activity-idle {
+  color: #3b82f6;
+}
+
+.stat-value.activity-driving {
+  color: #10b981;
+}
+
+.stat-value.activity-working {
+  color: #f59e0b;
+}
+
+.stat-value.activity-charging {
+  color: #8b5cf6;
+}
+
+.stat-value.activity-unknown {
+  color: #64748b;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .insights-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .insights-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .insights-header h3 {
+    font-size: 18px;
+  }
+
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .insight-icon {
+    font-size: 28px;
+    min-width: 40px;
+    height: 40px;
+  }
+
+  .insight-value {
+    font-size: 20px;
+  }
+
+  .quick-stats {
+    flex-direction: column;
+  }
+
+  .stat-item {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .sensor-insights {
+    padding: 16px;
+  }
+
+  .insight-card {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .insights-header h3 {
+    font-size: 16px;
+  }
+
+  .insight-value {
+    font-size: 18px;
+  }
+
+  .insight-description {
+    font-size: 12px;
+  }
+}

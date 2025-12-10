@@ -16,14 +16,15 @@ router.post('/', async (req, res) => {
     const telemetry = new Telemetry(enrichedData);
     await telemetry.save();
 
-    // Update forklift last seen and location
+    // Update forklift last seen, location, and telemetry data
     await Forklift.findOneAndUpdate(
       { forkliftId: enrichedData.forkliftId },
       {
         lastSeen: new Date(),
         currentLocation: enrichedData.gps,
         currentActivity: enrichedData.activity.state,
-        batteryLevel: enrichedData.ultrasonic?.loadDetected ? 80 : 90 // Placeholder
+        batteryLevel: enrichedData.ultrasonic?.loadDetected ? 80 : 90, // Placeholder
+        lastTelemetry: enrichedData // Store the complete telemetry data
       },
       { upsert: true, new: true }
     );

@@ -13,6 +13,8 @@ import HistoricalCharts from './HistoricalCharts';
 import DateRangeFilter from './DateRangeFilter';
 import ImpactEventsPanel from './ImpactEventsPanel';
 import FleetAnalyticsSummary from './FleetAnalyticsSummary';
+import SensorInsights from './SensorInsights';
+import ImpactAlert from './ImpactAlert';
 import api from '../../services/api';
 import UserMenu from '../UserMenu/UserMenu';
 import { formatNumber, formatPercentage } from '../../utils/formatters';
@@ -26,6 +28,9 @@ const QuickNav = ({ scrollToSection }) => {
       </button>
       <button onClick={() => scrollToSection('fleet-overview')} className="nav-item" title="Fleet Overview">
         🚜
+      </button>
+      <button onClick={() => scrollToSection('sensor-insights')} className="nav-item" title="Sensor Insights">
+        🔬
       </button>
       <button onClick={() => scrollToSection('analytics')} className="nav-item" title="Analytics">
         📈
@@ -218,6 +223,7 @@ const Dashboard = () => {
   return (
     <>
       <QuickNav scrollToSection={scrollToSection} />
+      <ImpactAlert forklifts={forklifts} />
       <div className="dashboard">
       {/* Header */}
       <div className="header">
@@ -352,6 +358,22 @@ const Dashboard = () => {
           <ForkliftList forklifts={forklifts} />
           <MapView forklifts={forklifts} />
         </div>
+      </div>
+
+      {/* Section Divider */}
+      <div className="section-divider"></div>
+
+      {/* Sensor Insights - Human Readable Data */}
+      <div className="sensor-insights-section" id="sensor-insights">
+        <div className="section-header">
+          <h2 className="section-title">🔬 Live Sensor Insights</h2>
+          <p className="section-description">Human-readable sensor data with intelligent health monitoring</p>
+        </div>
+        {forklifts.map((forklift) => (
+          forklift.lastTelemetry && (
+            <SensorInsights key={forklift.forkliftId} forklift={forklift} />
+          )
+        ))}
       </div>
 
       {/* Section Divider */}
