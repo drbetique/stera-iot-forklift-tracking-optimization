@@ -42,6 +42,10 @@ const forkliftSchema = new mongoose.Schema({
     type: Number,
     min: 0,
     max: 100
+  },
+  lastTelemetry: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
   }
 }, {
   timestamps: true
