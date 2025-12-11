@@ -5,6 +5,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import api from '../../services/api';
 import './ForkliftDetailsModal.css';
+import SensorInsights from '../Dashboard/SensorInsights';
 import {
   formatTime,
   formatCoordinate,
@@ -66,9 +67,10 @@ const createForkliftIcon = (activity) => {
 const ForkliftDetailsModal = ({ forklift, onClose }) => {
   const [latestTelemetry, setLatestTelemetry] = useState(null);
   const [sensorHistory, setSensorHistory] = useState([]);
+  const [telemetryHistory, setTelemetryHistory] = useState([]);
   const [impactEvents, setImpactEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview'); // overview, sensors, activity, history
+  const [activeTab, setActiveTab] = useState('overview'); // overview, insights, sensors, activity, history, insightHistory
 
   const fetchData = useCallback(async () => {
     if (!forklift) return;
@@ -79,6 +81,10 @@ const ForkliftDetailsModal = ({ forklift, onClose }) => {
       // Fetch latest telemetry
       const telemetry = await api.getForkliftLatestTelemetry(forklift.forkliftId);
       setLatestTelemetry(telemetry);
+
+      // Fetch telemetry history for insight trends (last 100 records)
+      const telemetryHist = await api.getForkliftTelemetryHistory(forklift.forkliftId, { limit: 100 });
+      setTelemetryHistory(telemetryHist);
 
       // Fetch latest sensor data from InfluxDB
       const sensorData = await api.getLatestSensorData(forklift.forkliftId);
@@ -172,6 +178,12 @@ const ForkliftDetailsModal = ({ forklift, onClose }) => {
             📊 Overview
           </button>
           <button
+            className={`tab-btn ${activeTab === 'insights' ? 'active' : ''}`}
+            onClick={() => setActiveTab('insights')}
+          >
+            🔬 Insights
+          </button>
+          <button
             className={`tab-btn ${activeTab === 'sensors' ? 'active' : ''}`}
             onClick={() => setActiveTab('sensors')}
           >
@@ -188,6 +200,12 @@ const ForkliftDetailsModal = ({ forklift, onClose }) => {
             onClick={() => setActiveTab('history')}
           >
             📜 History
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'insightHistory' ? 'active' : ''}`}
+            onClick={() => setActiveTab('insightHistory')}
+          >
+            📊 Insight History
           </button>
         </div>
 
@@ -329,6 +347,13 @@ const ForkliftDetailsModal = ({ forklift, onClose }) => {
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* INSIGHTS TAB */}
+              {activeTab === 'insights' && (
+                <div className="tab-content">
+                  <SensorInsights forklift={forklift} />
                 </div>
               )}
 
@@ -558,6 +583,108 @@ const ForkliftDetailsModal = ({ forklift, onClose }) => {
                     ) : (
                       <div className="empty-state">
                         <p>No historical data available</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* INSIGHT HISTORY TAB */}
+              {activeTab === 'insightHistory' && (
+                <div className="tab-content">
+                  <div className="section">
+                    <h3>📊 Health & Performance History</h3>
+                    <p className="section-subtitle">Track how sensor insights have changed over time</p>
+
+                    {telemetryHistory.length > 0 ? (
+                      <div className="history-table-container">
+                        <table className="history-table insight-history-table">
+                          <thead>
+                            <tr>
+                              <th>Timestamp</th>
+                              <th>Health Score</th>
+                              <th>Vibration</th>
+                              <th>Temperature</th>
+                              <th>Tilt Angle</th>
+                              <th>Activity</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {telemetryHistory.slice(0, 50).map((record, index) => {
+                              // Calculate health metrics for each record
+                              const accel = record.accelerometer || {};
+                              const vibration = accel.vibrationMagnitude || 0;
+                              const temp = accel.temperature || 25;
+                              const accel_z = Math.abs(accel.accelZ || 1);
+                              const tiltAngle = Math.acos(Math.min(accel_z / (vibration || 1), 1)) * (180 / Math.PI);
+
+                              // Calculate health score
+                              let healthScore = 100;
+                              if (vibration > 2.0) healthScore -= 20;
+                              if (vibration > 3.0) healthScore -= 20;
+                              if (temp > 35) healthScore -= 15;
+                              if (temp > 45) healthScore -= 25;
+                              if (tiltAngle > 30) healthScore -= 15;
+                              if (tiltAngle > 45) healthScore -= 20;
+                              healthScore = Math.max(0, Math.min(100, healthScore));
+
+                              const healthStatus = healthScore >= 80 ? 'excellent' : healthScore >= 60 ? 'good' : healthScore >= 40 ? 'fair' : 'poor';
+                              const vibLevel = vibration < 1.5 ? 'smooth' : vibration < 2.5 ? 'normal' : vibration < 4.0 ? 'rough' : 'very-rough';
+                              const tempLevel = temp < 25 ? 'cool' : temp < 35 ? 'normal' : temp < 45 ? 'warm' : 'hot';
+
+                              return (
+                                <tr key={index}>
+                                  <td>{formatTime(record.timestamp)}</td>
+                                  <td>
+                                    <div className="health-cell">
+                                      <span className={`health-badge ${healthStatus}`}>
+                                        {healthScore}%
+                                      </span>
+                                      <span className="health-label">{healthStatus}</span>
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <div className="metric-cell">
+                                      <span className={`metric-badge ${vibLevel}`}>
+                                        {vibration.toFixed(2)}g
+                                      </span>
+                                      <span className="metric-label">{vibLevel === 'very-rough' ? 'V.Rough' : capitalize(vibLevel)}</span>
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <div className="metric-cell">
+                                      <span className={`metric-badge ${tempLevel}`}>
+                                        {temp.toFixed(1)}°C
+                                      </span>
+                                      <span className="metric-label">{capitalize(tempLevel)}</span>
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <span className={`tilt-value ${tiltAngle > 30 ? 'warning' : ''}`}>
+                                      {tiltAngle.toFixed(1)}°
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span className="history-badge" style={{ backgroundColor: getActivityColor(record.activity?.state) }}>
+                                      {record.activity?.state || 'UNKNOWN'}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span className={`status-indicator ${healthScore >= 70 ? 'good' : healthScore >= 40 ? 'warning' : 'critical'}`}>
+                                      {healthScore >= 70 ? '✓ Good' : healthScore >= 40 ? '⚠ Check' : '✗ Alert'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="empty-state">
+                        <p>No insight history available</p>
+                        <p className="empty-subtitle">Historical data will appear here once telemetry is collected</p>
                       </div>
                     )}
                   </div>
